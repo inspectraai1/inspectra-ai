@@ -1,0 +1,2752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inspectra AI — Inspector Platform</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><defs><mask id='m'><rect width='100' height='100' fill='white'/><rect x='48.5' y='5' width='3' height='14' fill='black'/><rect x='48.5' y='5' width='3' height='14' fill='black' transform='rotate(38 50 50)'/><circle cx='58' cy='58' r='20' fill='black'/><line x1='68' y1='68' x2='93' y2='93' stroke='black' stroke-width='13' stroke-linecap='round'/></mask></defs><circle cx='50' cy='50' r='38' fill='none' stroke='white' stroke-width='11' mask='url(%23m)'/><circle cx='58' cy='58' r='14' fill='none' stroke='white' stroke-width='6'/><line x1='68' y1='68' x2='86' y2='86' stroke='white' stroke-width='6' stroke-linecap='round'/></svg>" />
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><defs><mask id='m'><rect width='100' height='100' fill='white'/><rect x='48.5' y='5' width='3' height='14' fill='black'/><rect x='48.5' y='5' width='3' height='14' fill='black' transform='rotate(38 50 50)'/><circle cx='58' cy='58' r='20' fill='black'/><line x1='68' y1='68' x2='93' y2='93' stroke='black' stroke-width='13' stroke-linecap='round'/></mask></defs><circle cx='50' cy='50' r='38' fill='none' stroke='white' stroke-width='11' mask='url(%23m)'/><circle cx='58' cy='58' r='14' fill='none' stroke='white' stroke-width='6'/><line x1='68' y1='68' x2='86' y2='86' stroke='white' stroke-width='6' stroke-linecap='round'/></svg>" />
+<meta name="theme-color" content="#0f0f0f" />
+<meta name="description" content="Inspectra AI — Qualified Credentialed Inspector Platform for SWPPP, ADEM, and stormwater compliance." />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-0:#0f0f0f; --bg-1:#1a1a1a; --bg-2:#232323; --bg-3:#2c2c2c; --bg-4:#383838;
+    --line:#2a2a2a; --line-2:#3a3a3a;
+    --text-1:#f1f1f1; --text-2:#b5b5b5; --text-3:#7a7a7a;
+    --accent:#d4d4d4; --accent-2:#b8b8b8; --accent-dark:#909090;
+    --accent-soft:rgba(212,212,212,.10);
+    --good:#9ba8a0; --good-2:rgba(155,168,160,.16);
+    --warn:#b0a386; --warn-2:rgba(176,163,134,.16);
+    --bad:#b08a82;  --bad-2:rgba(176,138,130,.18);
+    --info:#94a0ad; --info-2:rgba(148,160,173,.16);
+    --plum:#a89aa5; --plum-2:rgba(168,154,165,.16);
+    --shadow:0 8px 24px rgba(0,0,0,.45);
+    --shadow-soft:0 2px 8px rgba(0,0,0,.25);
+    --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Inter","Söhne","Segoe UI",Roboto,sans-serif;background:var(--bg-1);color:var(--text-1);overflow:hidden;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .app{display:flex;height:100vh;}
+
+  /* === LOGO === */
+  .ia-logo{display:block;}
+  .ia-logo .ring,.ia-logo .glass{stroke:currentColor;fill:none;}
+
+  /* SIDEBAR */
+  .sidebar{width:248px;background:var(--bg-0);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 14px;gap:2px;}
+  .brand{display:flex;align-items:center;gap:11px;padding:6px 8px 16px;border-bottom:1px solid var(--line);margin-bottom:14px;}
+  .brand-logo{width:40px;height:40px;border-radius:9px;background:var(--bg-1);border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;color:var(--text-1);flex-shrink:0;}
+  .brand-name{font-weight:700;letter-spacing:-.2px;font-size:16px;color:var(--text-1);}
+  .brand-sub{font-size:10.5px;color:var(--text-3);letter-spacing:1.2px;text-transform:uppercase;margin-top:2px;}
+  .nav-label{font-size:10.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--text-3);padding:14px 10px 6px;font-weight:600;}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;cursor:pointer;color:var(--text-2);font-size:13.5px;transition:all .12s ease;border:1px solid transparent;}
+  .nav-item:hover{background:var(--bg-2);color:var(--text-1);}
+  .nav-item.active{background:var(--bg-3);color:var(--text-1);border-color:var(--line-2);}
+  .nav-item .ico{width:18px;height:18px;opacity:.85;flex-shrink:0;}
+  .nav-item.active .ico{color:var(--text-1);opacity:1;}
+  .nav-item.locked .ico-lock{margin-left:auto;width:13px;height:13px;color:var(--text-3);}
+
+  /* OWNER badge */
+  .owner-badge{margin-left:auto;font-size:9px;padding:2px 6px;border-radius:99px;background:var(--accent);color:#1a1a1a;font-weight:700;letter-spacing:.5px;}
+
+  /* ACCOUNT MENU */
+  .account-menu{margin-top:auto;position:relative;border-top:1px solid var(--line);padding-top:12px;}
+  .account-trigger{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:var(--bg-2);border:1px solid var(--line);border-radius:9px;cursor:pointer;color:var(--text-1);font-family:inherit;transition:all .12s ease;}
+  .account-trigger:hover{background:var(--bg-3);border-color:var(--line-2);}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#d4d4d4,#909090);color:#1a1a1a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+  .account-info{flex:1;min-width:0;text-align:left;}
+  .account-name{font-size:12.5px;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .account-email{font-size:10.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .account-chev{width:14px;height:14px;color:var(--text-3);flex-shrink:0;transition:transform .15s ease;}
+  .account-menu.open .account-chev{transform:rotate(180deg);}
+  .account-dropdown{position:absolute;bottom:calc(100% + 4px);left:0;right:0;background:var(--bg-2);border:1px solid var(--line-2);border-radius:10px;padding:6px;z-index:100;box-shadow:var(--shadow);display:none;}
+  .account-menu.open .account-dropdown{display:block;}
+  .dd-header{padding:10px 12px;border-bottom:1px solid var(--line);margin-bottom:4px;}
+  .dd-header .name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .dd-header .email{font-size:11.5px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dd-header .tier{margin-top:6px;font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--text-2);font-weight:600;}
+  .dd-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text-1);transition:background .1s;}
+  .dd-item:hover{background:var(--bg-3);}
+  .dd-item .ico{width:15px;height:15px;opacity:.8;}
+  .dd-item.danger{color:var(--bad);}
+  .dd-item.danger:hover{background:var(--bad-2);}
+  .dd-divider{height:1px;background:var(--line);margin:4px 0;}
+
+  /* MAIN */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .topbar{height:62px;padding:0 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;background:var(--bg-1);}
+  .search{flex:1;max-width:520px;display:flex;align-items:center;gap:8px;background:var(--bg-2);border:1px solid var(--line);padding:9px 13px;border-radius:9px;transition:all .15s ease;}
+  .search:focus-within{border-color:var(--line-2);background:var(--bg-3);}
+  .search input{flex:1;background:transparent;border:none;outline:none;color:var(--text-1);font-size:13px;font-family:inherit;}
+  .search input::placeholder{color:var(--text-3);}
+  .topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+  .icon-btn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:var(--bg-2);border:1px solid var(--line);border-radius:9px;cursor:pointer;position:relative;transition:all .12s ease;}
+  .icon-btn:hover{background:var(--bg-3);border-color:var(--line-2);}
+  .btn-primary{background:var(--accent);color:#1a1a1a;font-weight:600;padding:9px 16px;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-family:inherit;box-shadow:var(--shadow-soft);transition:all .12s ease;}
+  .btn-primary:hover{background:#fff;transform:translateY(-1px);}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+  .btn-ghost{background:var(--bg-2);color:var(--text-1);border:1px solid var(--line);padding:9px 14px;border-radius:9px;cursor:pointer;font-size:13px;font-family:inherit;transition:all .12s ease;}
+  .btn-ghost:hover{background:var(--bg-3);border-color:var(--line-2);}
+
+  /* CONTENT */
+  .content{flex:1;overflow:auto;padding:24px;}
+  .page{display:none;}
+  .page.active{display:block;animation:fadeIn .25s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  .greeting{background:var(--bg-2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:var(--radius);padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .greeting-emoji{font-size:28px;}
+  .greeting-text{flex:1;min-width:220px;}
+  .greeting h2{margin:0 0 4px;font-size:19px;}
+  .greeting p{margin:0;color:var(--text-2);font-size:13.5px;}
+  .greeting-actions{display:flex;gap:8px;flex-wrap:wrap;}
+
+  .hero{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin-bottom:20px;}
+  .card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-soft);}
+  .card-title{font-size:12.5px;color:var(--text-2);margin-bottom:10px;letter-spacing:.4px;text-transform:uppercase;font-weight:600;}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .stat{background:var(--bg-2);border:1px solid var(--line);border-radius:11px;padding:16px;transition:all .15s ease;}
+  .stat:hover{border-color:var(--line-2);transform:translateY(-1px);}
+  .stat .label{font-size:11.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+  .stat .value{font-size:28px;font-weight:700;margin-top:6px;letter-spacing:-.5px;}
+  .stat .delta{font-size:12px;margin-top:6px;color:var(--text-3);}
+
+  .map-card{padding:0;overflow:hidden;height:460px;position:relative;}
+  .leaflet-container{background:var(--bg-1) !important;}
+  #map,#map2{width:100%;height:100%;}
+  .map-overlay{position:absolute;left:14px;top:14px;z-index:500;background:rgba(15,15,15,.92);backdrop-filter:blur(8px);padding:10px 14px;border-radius:9px;border:1px solid var(--line);font-size:12.5px;color:var(--text-1);}
+  .legend{position:absolute;right:14px;bottom:14px;z-index:500;background:rgba(15,15,15,.92);backdrop-filter:blur(8px);padding:10px 14px;border-radius:9px;border:1px solid var(--line);font-size:12px;}
+  .legend .row{display:flex;align-items:center;gap:8px;margin:3px 0;}
+  .legend .dot{width:10px;height:10px;border-radius:50%;}
+  .map-empty{position:absolute;inset:0;z-index:600;background:var(--bg-2);display:flex;align-items:center;justify-content:center;}
+
+  .weather-stack{display:flex;flex-direction:column;gap:14px;}
+  .weather-now{display:flex;align-items:center;gap:14px;background:var(--bg-3);padding:14px;border-radius:11px;border:1px solid var(--line);}
+  .weather-icon{width:54px;height:54px;border-radius:11px;background:var(--bg-4);border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;}
+  .weather-temp{font-size:26px;font-weight:700;letter-spacing:-.3px;}
+
+  .alert{display:flex;gap:12px;padding:13px 15px;border-radius:10px;border:1px solid var(--line);background:var(--bg-3);}
+  .alert.warn{border-left:3px solid var(--warn);}
+  .alert.bad{border-left:3px solid var(--bad);}
+  .alert.info{border-left:3px solid var(--info);}
+  .alert .ttl{font-weight:600;font-size:13.5px;}
+  .alert .desc{font-size:12.5px;color:var(--text-2);margin-top:3px;}
+  .alert-icon{width:34px;height:34px;flex-shrink:0;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--bg-4);font-size:17px;border:1px solid var(--line-2);}
+
+  .table-wrap{overflow:auto;border-radius:11px;border:1px solid var(--line);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:13px 15px;text-align:left;border-bottom:1px solid var(--line);}
+  th{background:var(--bg-3);color:var(--text-2);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.8px;position:sticky;top:0;}
+  tr:last-child td{border-bottom:none;}
+  tbody tr{transition:background .12s;}
+  tbody tr:hover td{background:var(--bg-3);cursor:pointer;}
+
+  .status-pill{padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;display:inline-block;letter-spacing:.3px;}
+  .status-active{background:var(--good-2);color:var(--good);border:1px solid rgba(155,168,160,.30);}
+  .status-inactive{background:rgba(122,122,122,.18);color:var(--text-2);border:1px solid rgba(122,122,122,.30);}
+  .status-completed{background:var(--info-2);color:var(--info);border:1px solid rgba(148,160,173,.30);}
+  .status-open{background:var(--bad-2);color:var(--bad);border:1px solid rgba(176,138,130,.30);}
+  .status-resolved{background:var(--good-2);color:var(--good);border:1px solid rgba(155,168,160,.30);}
+
+  .risk-pill{padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:5px;}
+  .risk-low{background:var(--good-2);color:var(--good);}
+  .risk-med{background:var(--warn-2);color:var(--warn);}
+  .risk-high{background:var(--bad-2);color:var(--bad);}
+  .score-bar{width:80px;height:6px;background:var(--bg-3);border-radius:99px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px;}
+  .score-bar > span{display:block;height:100%;}
+
+  .empty-state{text-align:center;padding:50px 30px;color:var(--text-2);}
+  .empty-state .em-icon{width:72px;height:72px;margin:0 auto 18px;border-radius:18px;background:var(--bg-3);border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;}
+  .empty-state h3{margin:0 0 8px;font-size:18px;color:var(--text-1);font-weight:600;}
+  .empty-state p{margin:0 0 20px;color:var(--text-2);font-size:14px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.55;}
+  .empty-state .actions{display:inline-flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+
+  /* DRAWER */
+  .drawer-mask{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:1000;backdrop-filter:blur(3px);}
+  .drawer-mask.show{display:block;}
+  .drawer{position:fixed;top:0;right:-720px;width:720px;max-width:96vw;height:100%;background:var(--bg-1);border-left:1px solid var(--line);z-index:1001;transition:right .3s cubic-bezier(.2,.8,.2,1);overflow-y:auto;}
+  .drawer.show{right:0;}
+  .drawer-head{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;position:sticky;top:0;background:var(--bg-1);z-index:2;}
+  .drawer-body{padding:24px;}
+  .tab-row{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;overflow-x:auto;}
+  .tab{padding:10px 14px;cursor:pointer;font-size:13px;color:var(--text-2);border-bottom:2px solid transparent;transition:color .12s;white-space:nowrap;}
+  .tab:hover{color:var(--text-1);}
+  .tab.active{color:var(--text-1);border-bottom-color:var(--accent);}
+
+  .timeline{position:relative;padding-left:24px;}
+  .timeline::before{content:"";position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--line);}
+  .tl-item{position:relative;padding:0 0 18px;}
+  .tl-item::before{content:"";position:absolute;left:-21px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--good);border:3px solid var(--bg-1);}
+  .tl-item.warn::before{background:var(--warn);}
+  .tl-item.bad::before{background:var(--bad);}
+  .tl-item .when{font-size:11.5px;color:var(--text-3);}
+  .tl-item .what{font-weight:600;margin-top:2px;font-size:13.5px;}
+  .tl-item .body{font-size:12.5px;color:var(--text-2);margin-top:5px;line-height:1.55;}
+
+  .field-row{display:grid;grid-template-columns:130px 1fr;gap:12px;margin-bottom:11px;align-items:center;}
+  .field-row label{color:var(--text-3);font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;font-weight:600;}
+  .field-row .val{font-size:13.5px;}
+
+  /* AI MODES */
+  .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .mode-card{border-radius:14px;padding:24px;position:relative;overflow:hidden;background:var(--bg-2);border:1px solid var(--line);transition:all .25s ease;}
+  .mode-card:hover{transform:translateY(-2px);border-color:var(--line-2);box-shadow:var(--shadow);}
+  .mode-card.featured{border-color:var(--accent-dark);background:linear-gradient(180deg,rgba(212,212,212,.04),var(--bg-2));box-shadow:0 8px 28px rgba(0,0,0,.4);}
+  .mode-card.current{border-color:var(--good);background:linear-gradient(180deg,rgba(155,168,160,.06),var(--bg-2));}
+  .mode-card h3{margin:0 0 4px;font-size:18px;letter-spacing:-.2px;}
+  .mode-card .price{font-size:30px;font-weight:700;margin:12px 0 14px;letter-spacing:-.5px;}
+  .mode-card .price small{font-size:14px;color:var(--text-3);font-weight:500;}
+  .mode-card ul{padding:0;margin:0;list-style:none;}
+  .mode-card li{font-size:13px;color:var(--text-2);padding:7px 0 7px 24px;position:relative;line-height:1.45;}
+  .mode-card li::before{content:"✓";position:absolute;left:0;color:var(--text-1);font-weight:700;}
+  .mode-card .mode-cta{margin-top:18px;width:100%;padding:11px;background:var(--bg-3);border:1px solid var(--line-2);color:var(--text-1);border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;transition:all .12s ease;}
+  .mode-card .mode-cta:hover{background:var(--bg-4);}
+  .mode-card.featured .mode-cta{background:var(--accent);color:#1a1a1a;border-color:transparent;}
+  .mode-card.featured .mode-cta:hover{background:#fff;}
+  .mode-card .badge{position:absolute;top:14px;right:14px;font-size:10px;padding:3px 8px;border-radius:99px;background:var(--good-2);color:var(--good);border:1px solid rgba(155,168,160,.30);font-weight:700;letter-spacing:.5px;}
+  .mode-card.current .badge{background:var(--good);color:#1a1a1a;border-color:transparent;}
+  .mode-card .pill-soft{position:absolute;top:14px;right:14px;}
+
+  /* FIELD MODE */
+  .field-header{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin-bottom:18px;}
+  .field-header-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  .field-header select{background:var(--bg-3);color:var(--text-1);border:1px solid var(--line);padding:10px 14px;border-radius:9px;font-size:14px;font-family:inherit;font-weight:600;cursor:pointer;min-width:280px;}
+  .field-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+
+  .quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+  .qa-btn{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:18px 14px;cursor:pointer;transition:all .12s ease;display:flex;align-items:center;gap:12px;color:var(--text-1);font-family:inherit;text-align:left;}
+  .qa-btn:hover{background:var(--bg-3);border-color:var(--line-2);transform:translateY(-1px);}
+  .qa-btn.primary{background:var(--accent);color:#1a1a1a;border-color:transparent;}
+  .qa-btn.primary:hover{background:#fff;}
+  .qa-btn .qa-icon{width:40px;height:40px;border-radius:10px;background:var(--bg-3);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;border:1px solid var(--line-2);}
+  .qa-btn.primary .qa-icon{background:rgba(0,0,0,.12);border-color:rgba(0,0,0,.2);}
+  .qa-btn .qa-text{flex:1;}
+  .qa-btn .qa-title{font-weight:600;font-size:13.5px;}
+  .qa-btn .qa-sub{font-size:11.5px;color:var(--text-3);margin-top:2px;}
+  .qa-btn.primary .qa-sub{color:rgba(0,0,0,.5);}
+
+  .field-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;}
+
+  .checklist-item{padding:13px 15px;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .12s ease;font-size:13.5px;}
+  .checklist-item:hover{background:var(--bg-3);border-color:var(--line-2);}
+  .checklist-item.done{background:var(--bg-3);}
+  .checklist-item.done .check-text{color:var(--text-2);text-decoration:line-through;text-decoration-color:var(--text-3);}
+  .check{width:22px;height:22px;border-radius:6px;border:2px solid var(--text-3);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s ease;}
+  .checklist-item.done .check{background:var(--accent);border-color:var(--accent);}
+  .checklist-item.done .check::after{content:"✓";color:#1a1a1a;font-weight:700;font-size:13px;}
+  .check-text{flex:1;}
+  .check-meta{font-size:11px;color:var(--text-3);}
+  .checklist-progress{height:6px;background:var(--bg-3);border-radius:99px;overflow:hidden;margin-bottom:14px;}
+  .checklist-progress > span{display:block;height:100%;background:linear-gradient(90deg,var(--accent-dark),var(--accent));transition:width .3s ease;}
+
+  .log-item{background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:13px 15px;margin-bottom:9px;}
+  .log-item:hover{border-color:var(--line-2);}
+  .log-item-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
+  .log-item-title{font-weight:600;font-size:13.5px;flex:1;min-width:0;}
+  .log-item-time{font-size:11px;color:var(--text-3);}
+  .log-item-body{font-size:12.5px;color:var(--text-2);line-height:1.55;}
+  .log-item-actions{display:flex;gap:6px;margin-top:8px;}
+  .log-item-actions button{background:transparent;border:1px solid var(--line-2);color:var(--text-2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;}
+  .log-item-actions button:hover{background:var(--bg-3);color:var(--text-1);}
+  .log-item.warn{border-left:3px solid var(--warn);}
+  .log-item.bad{border-left:3px solid var(--bad);}
+  .log-item.good{border-left:3px solid var(--good);}
+
+  .risk-calc{display:grid;grid-template-columns:1fr 320px;gap:20px;}
+  .slider-row{display:grid;grid-template-columns:170px 1fr 50px;align-items:center;gap:14px;padding:9px 0;}
+  .slider-row label{font-size:12.5px;color:var(--text-2);}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--good),var(--warn),var(--bad));outline:none;cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--text-1);box-shadow:0 0 0 4px rgba(241,241,241,.10);cursor:pointer;}
+  .slider-row .val{font-weight:700;text-align:right;}
+  .gauge{position:relative;width:240px;height:240px;margin:0 auto;}
+  .gauge svg{transform:rotate(-90deg);}
+  .gauge .track{fill:none;stroke:var(--bg-3);stroke-width:18;}
+  .gauge .fill{fill:none;stroke:url(#riskGrad);stroke-width:18;stroke-linecap:round;transition:stroke-dasharray .5s ease;}
+  .gauge .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .gauge .score-num{font-size:54px;font-weight:700;letter-spacing:-1px;}
+  .gauge .score-label{font-size:12.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:1.2px;font-weight:600;}
+
+  .charts-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin-top:18px;}
+  .chart-box{height:300px;}
+
+  .toast-area{position:fixed;bottom:24px;right:24px;z-index:5000;display:flex;flex-direction:column;gap:8px;}
+  .toast{background:var(--bg-3);border:1px solid var(--accent);padding:13px 17px;border-radius:10px;min-width:240px;box-shadow:var(--shadow);animation:slideIn .3s ease;font-size:13px;color:var(--text-1);}
+  @keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:none;opacity:1;}}
+
+  /* MODAL */
+  .modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(4px);padding:20px;}
+  .modal-mask.show{display:flex;}
+  .modal{background:var(--bg-1);border:1px solid var(--line);border-radius:14px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow);animation:modalIn .25s ease;}
+  @keyframes modalIn{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:scale(1);}}
+  .modal-head{display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid var(--line);}
+  .modal-head h2{margin:0;font-size:18px;flex:1;}
+  .modal-close{background:transparent;border:none;color:var(--text-2);font-size:22px;cursor:pointer;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+  .modal-close:hover{background:var(--bg-2);color:var(--text-1);}
+  .modal-body{padding:22px 24px;}
+  .modal-foot{padding:16px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;}
+
+  .form-group{margin-bottom:14px;}
+  .form-group label{display:block;font-size:12px;color:var(--text-2);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+  .form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg-2);color:var(--text-1);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;font-family:inherit;transition:border-color .12s;}
+  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--accent-dark);}
+  .form-group textarea{resize:vertical;min-height:80px;}
+  .form-group input.error{border-color:var(--bad);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .form-help{font-size:11.5px;color:var(--text-3);margin-top:4px;}
+
+  .seg{display:inline-flex;background:var(--bg-2);border:1px solid var(--line);border-radius:9px;padding:3px;margin-bottom:12px;}
+  .seg button{background:transparent;border:none;color:var(--text-2);padding:7px 14px;border-radius:6px;font-size:12.5px;font-family:inherit;font-weight:600;cursor:pointer;transition:all .12s ease;}
+  .seg button.active{background:var(--bg-3);color:var(--text-1);}
+
+  .rec-banner{display:flex;align-items:center;gap:12px;background:var(--bad-2);border:1px solid rgba(176,138,130,.30);border-radius:10px;padding:14px 16px;margin-bottom:16px;}
+  .rec-dot{width:12px;height:12px;border-radius:50%;background:var(--bad);animation:recPulse 1s infinite;}
+  @keyframes recPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.2);}}
+  .rec-bars{display:flex;gap:3px;align-items:flex-end;height:24px;}
+  .rec-bars span{display:block;width:3px;background:var(--bad);border-radius:1px;animation:recBar 1s infinite;}
+  .rec-bars span:nth-child(1){animation-delay:0s;}
+  .rec-bars span:nth-child(2){animation-delay:.1s;}
+  .rec-bars span:nth-child(3){animation-delay:.2s;}
+  .rec-bars span:nth-child(4){animation-delay:.3s;}
+  .rec-bars span:nth-child(5){animation-delay:.4s;}
+  @keyframes recBar{0%,100%{height:4px;}50%{height:24px;}}
+
+  /* LOCKED FEATURE OVERLAY */
+  .locked-card{background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:36px;text-align:center;}
+  .locked-card .lock-icon{width:64px;height:64px;border-radius:14px;background:var(--bg-3);border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;}
+  .locked-card h3{margin:0 0 8px;font-size:20px;}
+  .locked-card p{color:var(--text-2);font-size:14px;line-height:1.55;margin:0 0 20px;max-width:480px;margin-left:auto;margin-right:auto;}
+
+  /* PAYMENT MODAL */
+  .pay-summary{background:var(--bg-2);border:1px solid var(--line);border-radius:11px;padding:16px;margin-bottom:18px;}
+  .pay-summary .pay-plan-row{display:flex;align-items:flex-start;gap:14px;justify-content:space-between;}
+  .pay-summary .pay-plan{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+  .pay-summary .pay-plan-name{font-size:18px;font-weight:700;margin-top:2px;}
+  .pay-summary .pay-price-amt{font-size:26px;font-weight:700;letter-spacing:-.5px;text-align:right;}
+  .pay-summary .pay-price-amt small{font-size:13px;color:var(--text-3);font-weight:500;}
+  .pay-summary ul{margin:14px 0 0;padding-left:18px;}
+  .pay-summary li{font-size:12.5px;color:var(--text-2);padding:3px 0;}
+  .test-badge{display:flex;align-items:center;gap:10px;background:var(--warn-2);border:1px solid rgba(176,163,134,.30);border-radius:9px;padding:10px 14px;margin-bottom:18px;font-size:12px;color:var(--warn);}
+  .pay-card-input{display:flex;align-items:center;background:var(--bg-2);border:1px solid var(--line);border-radius:9px;padding:0 12px;}
+  .pay-card-input input{border:none !important;background:transparent !important;flex:1;}
+  .pay-card-input .card-brand{font-size:11px;color:var(--text-3);font-weight:700;letter-spacing:1px;}
+
+  .pay-success{text-align:center;padding:30px 10px;}
+  .pay-success .check-circle{width:72px;height:72px;border-radius:50%;background:var(--good-2);border:2px solid var(--good);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:var(--good);font-size:36px;font-weight:700;}
+  .pay-success h3{margin:0 0 8px;font-size:20px;}
+  .pay-success p{color:var(--text-2);margin:0 0 18px;}
+
+  .processing{text-align:center;padding:60px 20px;}
+  .spinner{width:48px;height:48px;border:4px solid var(--bg-3);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 18px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .pill-soft{padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;}
+  .pill-blue{background:var(--info-2);color:var(--info);}
+  .pill-purple{background:var(--plum-2);color:var(--plum);}
+  .pill-green{background:var(--good-2);color:var(--good);}
+  .pill-warn{background:var(--warn-2);color:var(--warn);}
+  .pill-bad{background:var(--bad-2);color:var(--bad);}
+  .pill-gray{background:var(--bg-3);color:var(--text-2);border:1px solid var(--line-2);}
+  .divider{height:1px;background:var(--line);margin:14px 0;}
+  .row{display:flex;gap:10px;align-items:center;}
+  .grow{flex:1;}
+  h2{margin:0 0 6px;font-size:24px;letter-spacing:-.4px;font-weight:700;}
+  .subhead{color:var(--text-2);font-size:13.5px;margin-bottom:20px;}
+
+  .pin{width:18px;height:18px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #f1f1f1;box-shadow:0 4px 10px rgba(0,0,0,.5);}
+  .pin.r-low{background:var(--good);} .pin.r-med{background:var(--warn);} .pin.r-high{background:var(--bad);}
+  .leaflet-popup-content-wrapper{background:var(--bg-2) !important;color:var(--text-1) !important;border:1px solid var(--line);border-radius:10px;}
+  .leaflet-popup-tip{background:var(--bg-2) !important;}
+  .leaflet-popup-content{margin:12px 14px !important;}
+  .leaflet-control-zoom a{background:var(--bg-2) !important;color:var(--text-1) !important;border:1px solid var(--line) !important;}
+  .leaflet-control-zoom a:hover{background:var(--bg-3) !important;}
+
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:99px;}
+  ::-webkit-scrollbar-thumb:hover{background:#4a4a4a;}
+
+  /* SEARCH DROPDOWN */
+  .search-wrap{flex:1;max-width:520px;position:relative;}
+  .search-results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg-2);border:1px solid var(--line-2);border-radius:10px;box-shadow:var(--shadow);z-index:1400;max-height:400px;overflow-y:auto;display:none;}
+  .search-results.show{display:block;animation:notifIn .15s ease;}
+  .sr-section-title{padding:10px 14px 4px;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:var(--text-3);font-weight:600;}
+  .sr-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);transition:background .1s;}
+  .sr-item:last-child{border-bottom:none;}
+  .sr-item:hover,.sr-item.active{background:var(--bg-3);}
+  .sr-icon{width:30px;height:30px;border-radius:8px;background:var(--bg-3);border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-2);}
+  .sr-content{flex:1;min-width:0;}
+  .sr-title{font-size:13px;font-weight:600;}
+  .sr-title mark{background:var(--accent);color:#1a1a1a;padding:0 2px;border-radius:2px;}
+  .sr-sub{font-size:11.5px;color:var(--text-3);margin-top:1px;}
+  .sr-empty{padding:24px 14px;text-align:center;color:var(--text-3);font-size:13px;}
+
+  /* NOTIFICATIONS */
+  .notif-wrap{position:relative;}
+  .notif-panel{position:absolute;top:calc(100% + 8px);right:0;width:380px;max-width:calc(100vw - 32px);max-height:540px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:12px;box-shadow:var(--shadow);z-index:1500;display:none;overflow:hidden;flex-direction:column;}
+  .notif-wrap.open .notif-panel{display:flex;animation:notifIn .2s ease;}
+  @keyframes notifIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
+  .notif-head{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);}
+  .notif-head h3{margin:0;font-size:14px;flex:1;font-weight:600;}
+  .notif-mark-read{background:transparent;border:none;color:var(--text-2);font-size:11.5px;cursor:pointer;font-family:inherit;}
+  .notif-mark-read:hover{color:var(--text-1);}
+  .notif-prefs{padding:6px 0;border-bottom:1px solid var(--line);}
+  .pref-row{display:flex;align-items:center;gap:12px;padding:10px 18px;}
+  .pref-row > div:first-child{flex:1;}
+  .pref-title{font-size:13px;font-weight:600;}
+  .pref-sub{font-size:11.5px;color:var(--text-3);margin-top:1px;}
+  .switch{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0;}
+  .switch input{opacity:0;width:0;height:0;}
+  .switch .slider{position:absolute;cursor:pointer;inset:0;background:var(--bg-4);border-radius:99px;transition:.15s ease;border:1px solid var(--line-2);}
+  .switch .slider:before{position:absolute;content:"";height:14px;width:14px;left:2px;bottom:2px;background:var(--text-1);border-radius:50%;transition:.15s ease;}
+  .switch input:checked + .slider{background:var(--accent);border-color:var(--accent);}
+  .switch input:checked + .slider:before{transform:translateX(16px);background:#1a1a1a;}
+  .notif-list-wrap{flex:1;overflow-y:auto;}
+  .notif-list-title{padding:12px 18px 6px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-3);font-weight:600;}
+  .notif-item{display:flex;gap:12px;padding:12px 18px;cursor:pointer;position:relative;transition:background .12s;border-bottom:1px solid var(--line);align-items:flex-start;}
+  .notif-item:last-child{border-bottom:none;}
+  .notif-item:hover{background:var(--bg-3);}
+  .notif-item.unread{background:rgba(212,212,212,.04);}
+  .notif-icon{width:32px;height:32px;border-radius:8px;background:var(--bg-3);border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:700;}
+  .notif-item.type-storm .notif-icon{background:var(--bad-2);border-color:rgba(176,138,130,.30);color:var(--bad);}
+  .notif-item.type-risk .notif-icon{background:var(--warn-2);border-color:rgba(176,163,134,.30);color:var(--warn);}
+  .notif-item.type-issues .notif-icon{background:var(--bad-2);border-color:rgba(176,138,130,.30);color:var(--bad);}
+  .notif-item.type-info .notif-icon{background:var(--info-2);border-color:rgba(148,160,173,.30);color:var(--info);}
+  .notif-item.type-good .notif-icon{background:var(--good-2);border-color:rgba(155,168,160,.30);color:var(--good);}
+  .notif-content{flex:1;min-width:0;}
+  .notif-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+  .notif-body{font-size:12px;color:var(--text-2);line-height:1.45;margin-bottom:4px;}
+  .notif-time{font-size:10.5px;color:var(--text-3);}
+  .notif-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;align-self:center;}
+
+  /* ACCOUNT PAGE */
+  .acct-header{display:flex;align-items:center;gap:18px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:18px;}
+  .acct-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#d4d4d4,#909090);color:#1a1a1a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:26px;flex-shrink:0;}
+  .acct-name{font-size:22px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .acct-email{font-size:13.5px;color:var(--text-2);margin-top:4px;}
+  .acct-meta{font-size:12px;color:var(--text-3);margin-top:4px;}
+
+  .info-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);}
+  .info-row:last-child{border-bottom:none;}
+  .info-row .info-label{font-size:12.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;}
+  .info-row .info-value{font-size:14px;color:var(--text-1);font-weight:500;text-align:right;}
+  .info-row .info-value small{color:var(--text-3);font-weight:400;}
+
+  /* HELP / FAQ */
+  .help-contact{background:var(--bg-2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:14px;padding:24px;margin-bottom:18px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+  .help-contact-icon{width:60px;height:60px;border-radius:14px;background:var(--bg-3);border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .help-contact-text{flex:1;min-width:240px;}
+  .help-contact-text h3{margin:0 0 4px;font-size:18px;}
+  .help-contact-text p{margin:0;color:var(--text-2);font-size:13.5px;}
+  .help-contact-email{font-family:monospace;font-size:15px;color:var(--text-1);background:var(--bg-3);padding:6px 12px;border-radius:8px;border:1px solid var(--line-2);display:inline-block;margin-top:8px;}
+
+  .faq-item{background:var(--bg-2);border:1px solid var(--line);border-radius:11px;margin-bottom:8px;overflow:hidden;transition:border-color .15s;}
+  .faq-item:hover{border-color:var(--line-2);}
+  .faq-item.open{border-color:var(--line-2);}
+  .faq-q{padding:16px 20px;cursor:pointer;display:flex;align-items:center;gap:14px;font-size:14px;font-weight:600;}
+  .faq-q .faq-chev{margin-left:auto;width:18px;height:18px;color:var(--text-3);transition:transform .2s ease;flex-shrink:0;}
+  .faq-item.open .faq-chev{transform:rotate(180deg);}
+  .faq-a{padding:0 20px 18px 20px;font-size:13.5px;color:var(--text-2);line-height:1.65;display:none;}
+  .faq-a strong{color:var(--text-1);}
+  .faq-item.open .faq-a{display:block;animation:faqIn .2s ease;}
+  @keyframes faqIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
+
+  /* AUTH ERRORS */
+  .auth-error{background:var(--bad-2);border:1px solid rgba(176,138,130,.30);border-left:3px solid var(--bad);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--bad);margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;animation:authErrIn .2s ease;line-height:1.45;}
+  .auth-error svg{flex-shrink:0;margin-top:1px;}
+  .auth-error strong{color:var(--text-1);}
+  .auth-error a{color:var(--text-1);text-decoration:underline;cursor:pointer;font-weight:600;}
+  .auth-success{background:var(--good-2);border:1px solid rgba(155,168,160,.30);border-left:3px solid var(--good);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--good);margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;animation:authErrIn .2s ease;line-height:1.45;}
+  @keyframes authErrIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
+  .form-group input.field-error{border-color:var(--bad);}
+  .auth-link{color:var(--text-1);text-decoration:underline;cursor:pointer;font-weight:500;}
+  .form-group label .auth-link{font-size:11px;text-transform:none;letter-spacing:0;font-weight:500;}
+
+  /* AUTH SCREEN */
+  .auth-screen{position:fixed;inset:0;z-index:9999;background:var(--bg-0);display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+  .auth-screen.show{display:flex;}
+  .auth-card{background:var(--bg-1);border:1px solid var(--line);border-radius:16px;padding:40px 36px;width:100%;max-width:440px;box-shadow:var(--shadow);}
+  .auth-brand{display:flex;align-items:center;gap:14px;margin-bottom:28px;}
+  .auth-brand .brand-logo{width:52px;height:52px;border-radius:12px;}
+  .auth-brand .name{font-size:20px;font-weight:700;}
+  .auth-brand .sub{font-size:11px;color:var(--text-3);letter-spacing:1.2px;text-transform:uppercase;margin-top:2px;}
+  .auth-tabs{display:flex;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:4px;margin-bottom:24px;}
+  .auth-tabs button{flex:1;background:transparent;border:none;color:var(--text-2);padding:9px;border-radius:7px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;transition:all .12s ease;}
+  .auth-tabs button.active{background:var(--bg-3);color:var(--text-1);}
+  .auth-card h1{margin:0 0 8px;font-size:22px;letter-spacing:-.3px;}
+  .auth-card .desc{margin:0 0 20px;color:var(--text-2);font-size:13.5px;}
+  .auth-card form{display:flex;flex-direction:column;gap:14px;}
+  .auth-card .btn-primary{padding:12px;font-size:14px;}
+  .auth-foot{margin-top:18px;padding-top:18px;border-top:1px solid var(--line);text-align:center;font-size:12.5px;color:var(--text-3);}
+
+  @media (max-width:1100px){
+    .hero{grid-template-columns:1fr;}
+    .modes{grid-template-columns:1fr;}
+    .charts-grid{grid-template-columns:1fr;}
+    .risk-calc{grid-template-columns:1fr;}
+    .grid-2{grid-template-columns:1fr;}
+    .quick-actions{grid-template-columns:repeat(2,1fr);}
+    .field-grid{grid-template-columns:1fr;}
+  }
+  @media (max-width:600px){
+    .sidebar{width:70px;}
+    .sidebar .brand-name,.sidebar .brand-sub,.sidebar .nav-item span:not(.owner-badge),.sidebar .account-info,.sidebar .account-chev,.sidebar .nav-label{display:none;}
+    .sidebar .nav-item,.sidebar .account-trigger{justify-content:center;}
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .quick-actions{grid-template-columns:1fr;}
+    .content{padding:16px;}
+    .form-row{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH SCREEN ============ -->
+<div class="auth-screen show" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="brand-logo">
+        <!-- Logo SVG -->
+        <svg class="ia-logo" width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <mask id="logoMask1">
+              <rect width="100" height="100" fill="white"/>
+              <rect x="48.5" y="5" width="3" height="14" fill="black"/>
+              <rect x="48.5" y="5" width="3" height="14" fill="black" transform="rotate(38 50 50)"/>
+              <circle cx="58" cy="58" r="20" fill="black"/>
+              <line x1="68" y1="68" x2="93" y2="93" stroke="black" stroke-width="13" stroke-linecap="round"/>
+            </mask>
+          </defs>
+          <circle class="ring" cx="50" cy="50" r="38" stroke-width="11" mask="url(#logoMask1)"/>
+          <circle class="glass" cx="58" cy="58" r="14" stroke-width="6"/>
+          <line class="glass" x1="68" y1="68" x2="86" y2="86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="name">Inspectra <span style="color:var(--text-2)">AI</span></div>
+        <div class="sub">Inspector Platform</div>
+      </div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="active" id="tabLogin" onclick="switchAuthTab('login')">Sign In</button>
+      <button id="tabSignup" onclick="switchAuthTab('signup')">Create Account</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="loginPane">
+      <h1>Welcome back</h1>
+      <p class="desc">Sign in to your Inspectra AI account.</p>
+      <div id="loginError" class="auth-error" style="display:none;"></div>
+      <form onsubmit="return doLogin(event)">
+        <div class="form-group"><label>Email</label><input type="email" id="loginEmail" required placeholder="you@company.com" /></div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;justify-content:space-between;">Password <a class="auth-link" style="font-size:11px;letter-spacing:0;text-transform:none;font-weight:500;" onclick="switchAuthTab('forgot')">Forgot?</a></label>
+          <input type="password" id="loginPassword" required placeholder="••••••••" />
+        </div>
+        <button class="btn-primary" type="submit">Sign In</button>
+      </form>
+      <div class="auth-foot">Don't have an account? <a class="auth-link" onclick="switchAuthTab('signup')">Create one</a></div>
+    </div>
+
+    <!-- Signup form -->
+    <div id="signupPane" style="display:none;">
+      <h1>Create your account</h1>
+      <p class="desc">Sign up for free. Upgrade to Vision AI or Predictive AI anytime.</p>
+      <div id="signupError" class="auth-error" style="display:none;"></div>
+      <form onsubmit="return doSignup(event)">
+        <div class="form-group"><label>Full Name</label><input type="text" id="signupName" required placeholder="Jane Smith" /></div>
+        <div class="form-group"><label>Email</label><input type="email" id="signupEmail" required placeholder="you@company.com" /></div>
+        <div class="form-group"><label>Password</label><input type="password" id="signupPassword" required minlength="6" placeholder="At least 6 characters" /></div>
+        <button class="btn-primary" type="submit">Create Account</button>
+      </form>
+      <div class="auth-foot">Already have an account? <a class="auth-link" onclick="switchAuthTab('login')">Sign in</a></div>
+    </div>
+
+    <!-- Import account from another device -->
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);text-align:center;">
+      <span style="font-size:11.5px;color:var(--text-3);">Switching from another device? </span>
+      <a class="auth-link" style="font-size:11.5px;" onclick="document.getElementById('importFile').click()">Import account file</a>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none;" onchange="importAccount(event)" />
+    </div>
+
+    <!-- Forgot password form -->
+    <div id="forgotPane" style="display:none;">
+      <h1>Reset your password</h1>
+      <p class="desc">Enter your email and a new password. In production, we'd email you a verification link first — for this build, you can reset it directly.</p>
+      <div id="forgotError" class="auth-error" style="display:none;"></div>
+      <form onsubmit="return doForgot(event)">
+        <div class="form-group"><label>Email</label><input type="email" id="forgotEmail" required placeholder="you@company.com" /></div>
+        <div class="form-group"><label>New Password</label><input type="password" id="forgotPassword" required minlength="6" placeholder="At least 6 characters" /></div>
+        <button class="btn-primary" type="submit">Reset Password</button>
+      </form>
+      <div class="auth-foot"><a class="auth-link" onclick="switchAuthTab('login')">Back to sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="app" id="app" style="display:none;">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg class="ia-logo" width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <mask id="logoMask2">
+              <rect width="100" height="100" fill="white"/>
+              <rect x="48.5" y="5" width="3" height="14" fill="black"/>
+              <rect x="48.5" y="5" width="3" height="14" fill="black" transform="rotate(38 50 50)"/>
+              <circle cx="58" cy="58" r="20" fill="black"/>
+              <line x1="68" y1="68" x2="93" y2="93" stroke="black" stroke-width="13" stroke-linecap="round"/>
+            </mask>
+          </defs>
+          <circle class="ring" cx="50" cy="50" r="38" stroke-width="11" mask="url(#logoMask2)"/>
+          <circle class="glass" cx="58" cy="58" r="14" stroke-width="6"/>
+          <line class="glass" x1="68" y1="68" x2="86" y2="86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">Inspectra <span style="color:var(--text-2)">AI</span></div>
+        <div class="brand-sub">Inspector Platform</div>
+      </div>
+    </div>
+
+    <div class="nav-label">Workspace</div>
+    <div class="nav-item active" data-page="dashboard">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" data-page="map">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+      <span>Site Map</span>
+    </div>
+    <div class="nav-item" data-page="sites">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+      <span>My Sites</span>
+    </div>
+    <div class="nav-item" data-page="inspect">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>Field Mode</span>
+    </div>
+    <div class="nav-item" data-page="weather">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 18a4 4 0 0 0 0-8 6 6 0 0 0-11.7-1.5A4 4 0 0 0 6 17"/><line x1="8" y1="20" x2="8" y2="22"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="16" y1="20" x2="16" y2="22"/></svg>
+      <span>Storm Watch</span>
+    </div>
+    <div class="nav-item" data-page="reports">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span>Reports</span>
+    </div>
+    <div class="nav-item" data-page="modes">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 L13.5 8.5 L20 7 L15.5 12 L20 17 L13.5 15.5 L12 22 L10.5 15.5 L4 17 L8.5 12 L4 7 L10.5 8.5 Z"/></svg>
+      <span>AI Modes</span>
+    </div>
+    <div class="nav-item" data-page="analytics">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+      <span>Insights</span>
+    </div>
+
+    <div class="account-menu" id="accountMenu">
+      <button class="account-trigger" onclick="toggleAccountMenu()">
+        <div class="avatar" id="navAvatar">??</div>
+        <div class="account-info">
+          <div class="account-name" id="navName">User</div>
+          <div class="account-email" id="navEmail">email</div>
+        </div>
+        <svg class="account-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+      </button>
+      <div class="account-dropdown">
+        <div class="dd-header">
+          <div class="name" id="ddName">User</div>
+          <div class="email" id="ddEmail">email</div>
+          <div class="tier" id="ddTier">FREE PLAN</div>
+        </div>
+        <div class="dd-item" onclick="showPage('modes'); toggleAccountMenu();"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 L13.5 8.5 L20 7 L15.5 12 L20 17 L13.5 15.5 L12 22 L10.5 15.5 L4 17 L8.5 12 L4 7 L10.5 8.5 Z"/></svg>Manage Subscription</div>
+        <div class="dd-item" onclick="showPage('account'); toggleAccountMenu();"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My Account</div>
+        <div class="dd-item" onclick="showPage('help'); toggleAccountMenu();"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Help &amp; Support</div>
+        <div class="dd-divider"></div>
+        <div class="dd-item" onclick="switchAccount()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Switch Account</div>
+        <div class="dd-item danger" onclick="logOut()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log Out</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="search-wrap" id="searchWrap">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7a7a7a" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="globalSearch" placeholder="Search your sites — by name, permit, county, address..." autocomplete="off" />
+        </div>
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      <div class="topbar-right">
+        <div class="notif-wrap" id="notifWrap">
+          <button class="icon-btn" id="notifBtn" title="Notifications" onclick="toggleNotifPanel(event)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f1f1f1" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span class="badge-dot" id="bellBadge" style="display:none;"></span>
+          </button>
+          <div class="notif-panel" id="notifPanel">
+            <div class="notif-head">
+              <h3>Notifications</h3>
+              <button class="notif-mark-read" onclick="markAllRead()">Mark all as read</button>
+            </div>
+            <div class="notif-prefs">
+              <div class="pref-row">
+                <div>
+                  <div class="pref-title">Push Alerts</div>
+                  <div class="pref-sub">Storms, high-risk sites, open issues</div>
+                </div>
+                <label class="switch"><input type="checkbox" id="prefPush" onchange="togglePref('push', this.checked)"><span class="slider"></span></label>
+              </div>
+              <div class="pref-row">
+                <div>
+                  <div class="pref-title">Email Summary</div>
+                  <div class="pref-sub">Daily digest at 8 AM</div>
+                </div>
+                <label class="switch"><input type="checkbox" id="prefEmail" onchange="togglePref('email', this.checked)"><span class="slider"></span></label>
+              </div>
+            </div>
+            <div class="notif-list-wrap">
+              <div class="notif-list-title">Recent</div>
+              <div class="notif-list" id="notifList"></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-ghost" onclick="showPage('inspect')">Field Mode</button>
+        <button class="btn-primary" onclick="openAddSite()">+ Add Site</button>
+      </div>
+    </div>
+
+    <div class="content" id="content">
+      <section class="page active" id="page-dashboard"><div id="dashboardContent"></div></section>
+
+      <section class="page" id="page-map">
+        <h2>Site Map</h2>
+        <div class="subhead">Sites where you've completed inspections — click a pin to see the details.</div>
+        <div class="card map-card" style="height: calc(100vh - 240px); min-height: 500px;">
+          <div id="map2"></div>
+          <div class="legend">
+            <div style="font-weight:600; margin-bottom:6px;">Risk Level</div>
+            <div class="row"><div class="dot" style="background:var(--good);"></div>Looking good</div>
+            <div class="row"><div class="dot" style="background:var(--warn);"></div>Worth a look</div>
+            <div class="row"><div class="dot" style="background:var(--bad);"></div>Needs attention</div>
+          </div>
+          <div class="map-empty" id="map2Empty">
+            <div class="empty-state">
+              <div class="em-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7a7a7a" stroke-width="1.8"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg></div>
+              <h3>No completed inspections yet</h3>
+              <p>Once you add a site and log an inspection, it'll appear on this map.</p>
+              <div class="actions"><button class="btn-primary" onclick="openAddSite()">+ Add Your First Site</button><button class="btn-ghost" id="loadSampleBtn" onclick="loadSampleData()">Load Sample Data</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-sites">
+        <h2>My Sites</h2>
+        <div class="subhead">The sites you've personally logged. Filter, search, and click any row for the full history.</div>
+        <div id="sitesContent"></div>
+      </section>
+
+      <section class="page" id="page-inspect">
+        <h2>Field Mode</h2>
+        <div class="subhead">Log inspections in real time. Works on your phone, tablet, or computer.</div>
+        <div id="fieldContent"></div>
+      </section>
+
+      <section class="page" id="page-weather">
+        <h2>Storm Watch</h2>
+        <div class="subhead">Real-time rainfall, threshold detection, and auto-flagging.</div>
+        <div class="grid-2" style="margin-bottom:18px;">
+          <div class="card">
+            <div class="card-title">Region Rainfall · Last 30 Days</div>
+            <div class="chart-box"><canvas id="rain30"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Recent Storm Events</div>
+            <div class="timeline" style="margin-top:10px;">
+              <div class="tl-item bad"><div class="when">Apr 27, 2026 · 14:22</div><div class="what">Heavy rainfall — 1.7"</div><div class="body">Threshold exceeded (>0.5"). Active sites would be auto-flagged for 24-hour post-storm inspection.</div></div>
+              <div class="tl-item warn"><div class="when">Apr 21–23, 2026</div><div class="what">Multi-day storm system</div><div class="body">Cumulative 2.4" over 60 hours.</div></div>
+              <div class="tl-item"><div class="when">Apr 12, 2026 · 09:15</div><div class="what">Light rain — 0.3"</div><div class="body">Below threshold.</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Storm-Flagged Sites</div>
+          <div id="stormSitesContent"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-reports">
+        <h2>Reports</h2>
+        <div class="subhead">Auto-generated, ADEM-formatted, ready to share.</div>
+        <div id="reportsContent"></div>
+      </section>
+
+      <section class="page" id="page-modes">
+        <h2>AI Modes</h2>
+        <div class="subhead" id="modesSubhead">Three tiers of AI assistance. Each builds on the last. Cancel anytime.</div>
+        <div id="modesContent"></div>
+      </section>
+
+      <section class="page" id="page-analytics">
+        <h2>Insights</h2>
+        <div class="subhead">How your team is doing. Where the risk lives. What you've prevented.</div>
+        <div id="insightsContent"></div>
+      </section>
+
+      <section class="page" id="page-account">
+        <h2>My Account</h2>
+        <div class="subhead">Your profile, subscription, and usage stats.</div>
+        <div id="accountContent"></div>
+      </section>
+
+      <section class="page" id="page-help">
+        <h2>Help &amp; Support</h2>
+        <div class="subhead">Got a question? We're here to help.</div>
+        <div id="helpContent"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- DRAWER -->
+<div class="drawer-mask" id="drawerMask" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div style="width:46px; height:46px; border-radius:10px; background: linear-gradient(135deg, #4a4a4a, #1a1a1a); border: 1px solid var(--line-2); display:flex; align-items:center; justify-content:center;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f1f1f1" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="font-weight:700; font-size:18px;" id="dr_name">Site Name</div>
+      <div style="font-size:12px; color:var(--text-3);" id="dr_meta">Permit · GPS · County</div>
+    </div>
+    <button class="btn-ghost" onclick="closeDrawer()">✕ Close</button>
+  </div>
+  <div class="drawer-body">
+    <div class="grid-3" style="margin-bottom:18px;">
+      <div class="stat"><div class="label">Risk Score</div><div class="value" id="dr_risk">—</div></div>
+      <div class="stat"><div class="label">Open Issues</div><div class="value" id="dr_open">—</div></div>
+      <div class="stat"><div class="label">Inspections</div><div class="value" id="dr_count">—</div></div>
+    </div>
+    <div class="tab-row">
+      <div class="tab active" data-tab="overview">Overview</div>
+      <div class="tab" data-tab="history">History</div>
+      <div class="tab" data-tab="notes">Voice Notes</div>
+      <div class="tab" data-tab="issues">Issues</div>
+      <div class="tab" data-tab="compliance">Compliant Items</div>
+    </div>
+    <div class="tab-content" id="tc-overview">
+      <div class="field-row"><label>Permit</label><div class="val" id="dr_permit">—</div></div>
+      <div class="field-row"><label>Status</label><div class="val" id="dr_status">—</div></div>
+      <div class="field-row"><label>Address</label><div class="val" id="dr_address">—</div></div>
+      <div class="field-row"><label>Developer</label><div class="val" id="dr_dev">—</div></div>
+      <div class="field-row"><label>Acreage</label><div class="val" id="dr_acres">—</div></div>
+    </div>
+    <div class="tab-content" id="tc-history" style="display:none;"><div class="timeline" id="dr_timeline"></div></div>
+    <div class="tab-content" id="tc-notes" style="display:none;"><div id="dr_notes"></div></div>
+    <div class="tab-content" id="tc-issues" style="display:none;"><div id="dr_issues"></div></div>
+    <div class="tab-content" id="tc-compliance" style="display:none;"><div id="dr_compliance"></div></div>
+  </div>
+</aside>
+
+<!-- ADD SITE MODAL -->
+<div class="modal-mask" id="addSiteMask" onclick="if(event.target===this) closeAddSite()">
+  <div class="modal">
+    <div class="modal-head"><h2>Add a New Site</h2><button class="modal-close" onclick="closeAddSite()">×</button></div>
+    <div class="modal-body">
+      <form id="addSiteForm" onsubmit="return submitNewSite(event)">
+        <div class="form-group"><label>Site Name *</label><input name="name" required placeholder="e.g., Eastview Towers · Phase 2" /></div>
+        <div class="form-group"><label>Permit Number</label><input name="permit" placeholder="SWPPP-2026-..." /><div class="form-help">Stormwater / SWPPP permit ID issued for this site.</div></div>
+        <div class="form-row">
+          <div class="form-group"><label>County</label><input name="county" placeholder="e.g., Jefferson" /></div>
+          <div class="form-group"><label>Status</label><select name="status"><option value="active">Active</option><option value="inactive">Inactive</option><option value="completed">Completed</option></select></div>
+        </div>
+        <label style="display:block;font-size:12px;color:var(--text-2);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Location *</label>
+        <div class="seg" id="locSeg">
+          <button type="button" class="active" onclick="setLocMode('address')">Address</button>
+          <button type="button" onclick="setLocMode('coords')">Coordinates</button>
+        </div>
+        <div id="locAddress">
+          <div class="form-group"><input name="address" placeholder="123 Main St, Birmingham, AL 35203" /><div class="form-help">We'll auto-geocode the address into GPS coordinates.</div></div>
+        </div>
+        <div id="locCoords" style="display:none;">
+          <div class="form-row">
+            <div class="form-group"><label>Latitude</label><input name="lat" type="number" step="0.0001" placeholder="33.5191" /></div>
+            <div class="form-group"><label>Longitude</label><input name="lng" type="number" step="0.0001" placeholder="-86.7825" /></div>
+          </div>
+        </div>
+        <div class="form-group"><label>Developer / Owner</label><input name="dev" placeholder="e.g., Sumner Civil Group" /></div>
+        <div class="form-group"><label>Acreage</label><input name="acres" type="number" step="0.1" placeholder="18.4" /></div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" onclick="closeAddSite()">Cancel</button>
+      <button class="btn-primary" id="addSiteSubmit" onclick="document.getElementById('addSiteForm').requestSubmit()">Add Site</button>
+    </div>
+  </div>
+</div>
+
+<!-- VOICE NOTE MODAL -->
+<div class="modal-mask" id="voiceMask" onclick="if(event.target===this) closeVoiceNote()">
+  <div class="modal">
+    <div class="modal-head"><h2>Voice Note</h2><button class="modal-close" onclick="closeVoiceNote()">×</button></div>
+    <div class="modal-body">
+      <div class="rec-banner">
+        <div class="rec-dot"></div>
+        <div style="flex:1;"><div style="font-weight:600; font-size:13.5px;">Listening...</div><div style="font-size:11.5px; color:var(--text-3); margin-top:2px;" id="voiceSub">Speak naturally — we'll convert to SWPPP-formatted notes.</div></div>
+        <div class="rec-bars"><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div class="form-group">
+        <label>Transcription <span style="color:var(--text-3); text-transform:none; letter-spacing:0; font-weight:500;">(edit if needed)</span></label>
+        <textarea id="voiceText" rows="6" placeholder="Your voice will appear here as text..."></textarea>
+        <div class="form-help">Saving to: <strong id="voiceSiteName" style="color:var(--text-1);">—</strong></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-ghost" onclick="closeVoiceNote()">Cancel</button><button class="btn-primary" onclick="saveVoiceNote()">Save Note</button></div>
+  </div>
+</div>
+
+<!-- LOG ISSUE MODAL -->
+<div class="modal-mask" id="issueMask" onclick="if(event.target===this) closeLogIssue()">
+  <div class="modal">
+    <div class="modal-head"><h2>Log an Issue</h2><button class="modal-close" onclick="closeLogIssue()">×</button></div>
+    <div class="modal-body">
+      <form id="issueForm" onsubmit="return saveIssue(event)">
+        <div class="form-group"><label>Issue Title *</label><input id="issueTitle" required placeholder="e.g., Silt fence breach at NE corner" /></div>
+        <div class="form-group"><label>Description</label><textarea id="issueDesc" rows="4" placeholder="What did you see? Where? What's the corrective action?"></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>Severity</label><select id="issueSeverity"><option value="low">Low — minor</option><option value="med" selected>Medium — needs attention</option><option value="high">High — urgent</option></select></div>
+          <div class="form-group"><label>BMP / Category</label><select id="issueBmp"><option>Silt Fence</option><option>Inlet Protection</option><option>Sediment Basin</option><option>Construction Entrance</option><option>Concrete Washout</option><option>Stockpile Cover</option><option>Track-out</option><option>Other</option></select></div>
+        </div>
+        <div class="form-help">Logging to: <strong id="issueSiteName" style="color:var(--text-1);">—</strong></div>
+      </form>
+    </div>
+    <div class="modal-foot"><button class="btn-ghost" onclick="closeLogIssue()">Cancel</button><button class="btn-primary" onclick="document.getElementById('issueForm').requestSubmit()">Log Issue</button></div>
+  </div>
+</div>
+
+<!-- MARK COMPLIANT MODAL -->
+<div class="modal-mask" id="compliantMask" onclick="if(event.target===this) closeMarkCompliant()">
+  <div class="modal">
+    <div class="modal-head"><h2>Mark Compliant</h2><button class="modal-close" onclick="closeMarkCompliant()">×</button></div>
+    <div class="modal-body">
+      <form id="compliantForm" onsubmit="return saveCompliant(event)">
+        <div class="form-group"><label>What's compliant? *</label><select id="compliantItem"><option>Perimeter Silt Fence</option><option>Inlet Protection</option><option>Sediment Basin</option><option>Construction Entrance</option><option>Concrete Washout</option><option>Stockpile Cover</option><option>Off-site Sediment Tracking</option><option>Other (specify in notes)</option></select></div>
+        <div class="form-group"><label>Notes (optional)</label><textarea id="compliantNotes" rows="3" placeholder="Any details about the inspection..."></textarea></div>
+        <div class="form-help">Logging to: <strong id="compliantSiteName" style="color:var(--text-1);">—</strong></div>
+      </form>
+    </div>
+    <div class="modal-foot"><button class="btn-ghost" onclick="closeMarkCompliant()">Cancel</button><button class="btn-primary" onclick="document.getElementById('compliantForm').requestSubmit()">Save</button></div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-mask" id="payMask" onclick="if(event.target===this) closePayment()">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-head"><h2 id="payTitle">Subscribe to Plan</h2><button class="modal-close" onclick="closePayment()">×</button></div>
+    <div class="modal-body" id="payBody">
+      <!-- Stage 1: Form -->
+      <div id="payStageForm">
+        <div class="pay-summary">
+          <div class="pay-plan-row">
+            <div>
+              <div class="pay-plan">Plan</div>
+              <div class="pay-plan-name" id="paySummaryName">Vision AI</div>
+            </div>
+            <div class="pay-price-amt">$<span id="paySummaryPrice">14.99</span><small>/month</small></div>
+          </div>
+          <ul id="paySummaryFeatures"></ul>
+        </div>
+        <div class="test-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div><strong>Test Mode</strong> — use card 4242 4242 4242 4242 with any future date and any CVC. No real card will be charged.</div>
+        </div>
+        <form id="payForm" onsubmit="return processPayment(event)">
+          <div class="form-group">
+            <label>Email Receipt</label>
+            <input id="payEmail" type="email" required placeholder="you@company.com" />
+          </div>
+          <div class="form-group">
+            <label>Card Information</label>
+            <div class="pay-card-input">
+              <input id="payCard" required placeholder="1234 1234 1234 1234" maxlength="23" autocomplete="cc-number" />
+              <span class="card-brand" id="payCardBrand">CARD</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Expiration</label><input id="payExp" required placeholder="MM / YY" maxlength="7" autocomplete="cc-exp" /></div>
+            <div class="form-group"><label>CVC</label><input id="payCvc" required placeholder="123" maxlength="4" autocomplete="cc-csc" /></div>
+          </div>
+          <div class="form-group"><label>Cardholder Name</label><input id="payName" required placeholder="Name on card" autocomplete="cc-name" /></div>
+        </form>
+      </div>
+      <!-- Stage 2: Processing -->
+      <div id="payStageProcessing" style="display:none;">
+        <div class="processing">
+          <div class="spinner"></div>
+          <div style="font-weight:600; font-size:14px;">Processing your payment...</div>
+          <div style="font-size:12.5px; color:var(--text-3); margin-top:4px;">This will only take a moment.</div>
+        </div>
+      </div>
+      <!-- Stage 3: Success -->
+      <div id="payStageSuccess" style="display:none;">
+        <div class="pay-success">
+          <div class="check-circle">✓</div>
+          <h3 id="paySuccessTitle">You're all set!</h3>
+          <p id="paySuccessMsg">Your subscription is now active. Enjoy your new features.</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot" id="payFoot">
+      <button class="btn-ghost" onclick="closePayment()">Cancel</button>
+      <button class="btn-primary" id="paySubmit" onclick="document.getElementById('payForm').requestSubmit()">Pay $<span id="payAmount">14.99</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-area" id="toastArea"></div>
+
+<script>
+/* ===================== CONSTANTS ===================== */
+// Only this email is recognized as the platform owner with full admin access.
+const OWNER_EMAILS = ["inspectraai.1@gmail.com"];
+const OWNER_EMAIL = OWNER_EMAILS[0];
+
+const TIERS = {
+  free:          { rank: 0, name: "Free",          price: 0,     features: ["Site management", "Photos & GPS tagging", "Issue logging", "Voice notes (manual)"] },
+  documentation: { rank: 1, name: "Documentation AI", price: 9.99,  features: ["Auto-generate inspection reports", "Photo organization & tagging", "Notes → SWPPP-compliant language", "Voice-to-text transcription", "PDF export · ADEM-formatted"] },
+  vision:        { rank: 2, name: "Vision AI",     price: 14.99, features: ["Everything in Documentation AI", "Auto-detect broken silt fences", "Identify sediment runoff & rills", "Spot clogged inlets in photos", "BMP condition scoring"] },
+  predictive:    { rank: 3, name: "Predictive AI", price: 29.99, features: ["Everything in Vision AI", "Failure-likelihood prediction per site", "Weather + terrain + history fusion", "Pre-storm prioritization", "API access · multi-firm dashboards"] },
+};
+
+/* ===================== PERSISTED STATE ===================== */
+let users = {};
+let currentUserEmail = null;
+let pendingTier = null;
+
+function safeGet(key){ try { return JSON.parse(localStorage.getItem(key) || "null"); } catch { return null; } }
+function safeSet(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+
+function loadState(){
+  users = safeGet("inspectra_users") || {};
+  currentUserEmail = safeGet("inspectra_current") || null;
+}
+function saveUsers(){ safeSet("inspectra_users", users); }
+function saveCurrent(){ safeSet("inspectra_current", currentUserEmail); }
+
+function getCurrentUser(){
+  if (!currentUserEmail) return null;
+  return users[currentUserEmail] || null;
+}
+function isOwner(){ return currentUserEmail && OWNER_EMAILS.includes(currentUserEmail); }
+
+function getUserTier(){
+  if (isOwner()) return "predictive"; // owner has all access
+  const u = getCurrentUser();
+  if (!u || !u.subscription) return "free";
+  return u.subscription.tier || "free";
+}
+function hasAccess(requiredTier){
+  const userRank = TIERS[getUserTier()].rank;
+  const requiredRank = TIERS[requiredTier].rank;
+  return userRank >= requiredRank;
+}
+
+/* ===================== AUTH ===================== */
+function showAuthError(paneId, msg){
+  const el = document.getElementById(paneId + "Error");
+  if (!el) return;
+  el.className = "auth-error";
+  el.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div>' + msg + '</div>';
+  el.style.display = 'flex';
+}
+function showAuthSuccess(paneId, msg){
+  const el = document.getElementById(paneId + "Error");
+  if (!el) return;
+  el.className = "auth-success";
+  el.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><div>' + msg + '</div>';
+  el.style.display = 'flex';
+}
+function clearAuthError(paneId){
+  const el = document.getElementById(paneId + "Error");
+  if (el) { el.style.display = 'none'; el.innerHTML = ''; }
+}
+
+function switchAuthTab(tab){
+  const tabs = document.querySelector(".auth-tabs");
+  if (tabs) tabs.style.display = tab === "forgot" ? "none" : "";
+  document.getElementById("tabLogin").classList.toggle("active", tab === "login");
+  document.getElementById("tabSignup").classList.toggle("active", tab === "signup");
+  document.getElementById("loginPane").style.display = tab === "login" ? "" : "none";
+  document.getElementById("signupPane").style.display = tab === "signup" ? "" : "none";
+  document.getElementById("forgotPane").style.display = tab === "forgot" ? "" : "none";
+  // Clear errors and field-error highlights
+  clearAuthError('login'); clearAuthError('signup'); clearAuthError('forgot');
+  document.querySelectorAll(".field-error").forEach(el => el.classList.remove("field-error"));
+}
+
+function doSignup(e){
+  e.preventDefault();
+  clearAuthError('signup');
+  const name = document.getElementById("signupName").value.trim();
+  const email = document.getElementById("signupEmail").value.trim().toLowerCase();
+  const password = document.getElementById("signupPassword").value;
+  const nameEl = document.getElementById("signupName");
+  const emailEl = document.getElementById("signupEmail");
+  const pwdEl = document.getElementById("signupPassword");
+  nameEl.classList.remove("field-error");
+  emailEl.classList.remove("field-error");
+  pwdEl.classList.remove("field-error");
+  if (!name) { showAuthError('signup', 'Please enter your full name.'); nameEl.classList.add("field-error"); nameEl.focus(); return false; }
+  if (!email) { showAuthError('signup', 'Please enter your email address.'); emailEl.classList.add("field-error"); emailEl.focus(); return false; }
+  if (password.length < 6) { showAuthError('signup', 'Password must be at least 6 characters.'); pwdEl.classList.add("field-error"); pwdEl.focus(); return false; }
+  if (users[email]) {
+    showAuthError('signup', `<strong>Error — email has an account.</strong> An account with <strong>${escapeHtml(email)}</strong> already exists. <a class="auth-link" onclick="prefillLogin('${escapeHtml(email)}')">Sign in instead</a>.`);
+    emailEl.classList.add("field-error");
+    return false;
+  }
+  const initials = name.split(" ").filter(Boolean).slice(0,2).map(s=>s[0].toUpperCase()).join("") || email.slice(0,2).toUpperCase();
+  const isOwnerSignup = OWNER_EMAILS.includes(email);
+  users[email] = {
+    name, email, password, initials,
+    isOwner: isOwnerSignup,
+    subscription: { tier: isOwnerSignup ? "predictive" : "free", since: Date.now() },
+    sites: [], nextSiteId: 1, nextLogId: 1, createdAt: Date.now(),
+  };
+  saveUsers();
+  currentUserEmail = email;
+  saveCurrent();
+  enterApp();
+  toast(isOwnerSignup ? "Welcome — owner account activated" : `Welcome, ${name.split(" ")[0]}!`);
+  return false;
+}
+
+function doLogin(e){
+  e.preventDefault();
+  clearAuthError('login');
+  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+  const password = document.getElementById("loginPassword").value;
+  const emailEl = document.getElementById("loginEmail");
+  const pwdEl = document.getElementById("loginPassword");
+  emailEl.classList.remove("field-error");
+  pwdEl.classList.remove("field-error");
+  const u = users[email];
+  if (!u) {
+    showAuthError('login', `<strong>Wrong email.</strong> No Inspectra AI account exists for <strong>${escapeHtml(email)}</strong>. Check your spelling or <a class="auth-link" onclick="prefillSignup('${escapeHtml(email)}')">create an account</a>.`);
+    emailEl.classList.add("field-error");
+    emailEl.focus();
+    return false;
+  }
+  if (u.password !== password) {
+    showAuthError('login', `<strong>Wrong password.</strong> The email <strong>${escapeHtml(email)}</strong> is correct, but the password is wrong. <a class="auth-link" onclick="switchAuthTab('forgot')">Reset password</a>?`);
+    pwdEl.classList.add("field-error");
+    pwdEl.value = "";
+    pwdEl.focus();
+    return false;
+  }
+  currentUserEmail = email;
+  saveCurrent();
+  enterApp();
+  toast(`Welcome back, ${u.name.split(" ")[0]}`);
+  return false;
+}
+
+function doForgot(e){
+  e.preventDefault();
+  clearAuthError('forgot');
+  const email = document.getElementById("forgotEmail").value.trim().toLowerCase();
+  const password = document.getElementById("forgotPassword").value;
+  const emailEl = document.getElementById("forgotEmail");
+  const pwdEl = document.getElementById("forgotPassword");
+  emailEl.classList.remove("field-error");
+  pwdEl.classList.remove("field-error");
+  const u = users[email];
+  if (!u) {
+    showAuthError('forgot', `<strong>Error — no account found.</strong> No Inspectra AI account exists for <strong>${escapeHtml(email)}</strong>. <a class="auth-link" onclick="prefillSignup('${escapeHtml(email)}')">Create one</a>?`);
+    emailEl.classList.add("field-error");
+    return false;
+  }
+  if (password.length < 6) {
+    showAuthError('forgot', 'New password must be at least 6 characters.');
+    pwdEl.classList.add("field-error");
+    pwdEl.focus();
+    return false;
+  }
+  u.password = password;
+  saveUsers();
+  switchAuthTab('login');
+  document.getElementById("loginEmail").value = email;
+  document.getElementById("loginPassword").value = "";
+  document.getElementById("loginPassword").focus();
+  showAuthSuccess('login', `Password reset. Sign in with your new password for <strong>${escapeHtml(email)}</strong>.`);
+  return false;
+}
+
+function prefillSignup(email){
+  switchAuthTab('signup');
+  document.getElementById('signupEmail').value = email;
+  document.getElementById('signupName').focus();
+}
+
+function importAccount(e){
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    try {
+      const data = JSON.parse(evt.target.result);
+      if (!data.email || !data.password || !data.name) {
+        showAuthError('login', '<strong>Invalid file.</strong> That doesn\'t look like an Inspectra AI account export.');
+        return;
+      }
+      const existing = users[data.email];
+      if (existing) {
+        if (!confirm(`An account for ${data.email} already exists on this device. Overwrite it with the imported data? Your current data on this device will be replaced.`)) {
+          e.target.value = "";
+          return;
+        }
+      }
+      users[data.email] = data;
+      saveUsers();
+      currentUserEmail = data.email;
+      saveCurrent();
+      enterApp();
+      toast(`Account imported — welcome back, ${data.name.split(" ")[0]}`);
+    } catch(err) {
+      showAuthError('login', '<strong>Import failed.</strong> The file is not a valid JSON account export.');
+    }
+    e.target.value = "";
+  };
+  reader.readAsText(file);
+}
+function prefillLogin(email){
+  switchAuthTab('login');
+  document.getElementById('loginEmail').value = email;
+  document.getElementById('loginPassword').focus();
+}
+
+// Clear field-error styles when user types
+["loginEmail","loginPassword","signupName","signupEmail","signupPassword","forgotEmail","forgotPassword"].forEach(id=>{
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("input", ()=>el.classList.remove("field-error"));
+});
+
+function logOut(){
+  document.getElementById("accountMenu").classList.remove("open");
+  currentUserEmail = null;
+  saveCurrent();
+  document.getElementById("app").style.display = "none";
+  document.getElementById("authScreen").classList.add("show");
+  switchAuthTab("login");
+  document.getElementById("loginEmail").value = "";
+  document.getElementById("loginPassword").value = "";
+}
+function switchAccount(){
+  document.getElementById("accountMenu").classList.remove("open");
+  currentUserEmail = null;
+  saveCurrent();
+  document.getElementById("app").style.display = "none";
+  document.getElementById("authScreen").classList.add("show");
+  switchAuthTab("login");
+}
+
+function enterApp(){
+  const u = getCurrentUser();
+  if (!u) return;
+  // Update nav
+  document.getElementById("navAvatar").textContent = u.initials;
+  document.getElementById("navName").innerHTML = u.name + (isOwner() ? ' <span class="owner-badge">OWNER</span>' : '');
+  document.getElementById("navEmail").textContent = u.email;
+  document.getElementById("ddName").innerHTML = u.name + (isOwner() ? ' <span class="owner-badge">OWNER</span>' : '');
+  document.getElementById("ddEmail").textContent = u.email;
+  document.getElementById("ddTier").textContent = isOwner() ? "OWNER · ALL FEATURES" : (TIERS[getUserTier()].name + " PLAN");
+  // Show/hide owner-only buttons
+  const sampleBtn = document.getElementById("loadSampleBtn");
+  if (sampleBtn) sampleBtn.style.display = isOwner() ? "" : "none";
+  // Hide auth, show app
+  document.getElementById("authScreen").classList.remove("show");
+  document.getElementById("app").style.display = "flex";
+  // Generate notifications based on current data
+  generateNotifications();
+  // Render
+  refreshAll();
+  showPage("dashboard");
+}
+
+/* ===================== DATA HELPERS ===================== */
+function MY_SITES(){ const u = getCurrentUser(); return u ? u.sites : []; }
+function persist(){ saveUsers(); }
+
+function riskBucket(s){ return s<40 ? "low" : s<70 ? "med" : "high"; }
+function riskLabel(s){ return s<40 ? "Looking good" : s<70 ? "Worth a look" : "Needs attention"; }
+function riskColor(s){ return s<40 ? "#9ba8a0" : s<70 ? "#b0a386" : "#b08a82"; }
+function statusLabel(s){ return s==="active" ? "ACTIVE" : s==="completed" ? "COMPLETED" : "INACTIVE"; }
+function severityLabel(s){ return s==="low" ? "LOW" : s==="med" ? "MEDIUM" : "HIGH"; }
+function severityClass(s){ return s==="low" ? "good" : s==="med" ? "warn" : "bad"; }
+function nowStr(){ return new Date().toLocaleString(undefined, { month:"short", day:"numeric", year:"numeric", hour:"numeric", minute:"2-digit" }); }
+function escapeHtml(t){ if (!t) return ""; return String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+function nextSiteId(){ const u = getCurrentUser(); u.nextSiteId = (u.nextSiteId || 1) + 1; return u.nextSiteId - 1; }
+function nextLogId(){ const u = getCurrentUser(); u.nextLogId = (u.nextLogId || 1) + 1; return u.nextLogId - 1; }
+
+/* ===================== NAV ===================== */
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById("page-"+id).classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.querySelector(`.nav-item[data-page="${id}"]`)?.classList.add("active");
+  if (id === "map") {
+    if (!window._map2Init) initMap2();
+    setTimeout(()=>{ if (map2) map2.invalidateSize(); }, 60);
+  }
+  if (id === "dashboard" && map) setTimeout(()=>{ if (map) map.invalidateSize(); }, 60);
+  if (id === "weather" && !window._rain30Init) drawRain30();
+  if (id === "analytics") drawAnalytics();
+  if (id === "modes") renderModes();
+  if (id === "account") renderAccount();
+  if (id === "help") renderHelp();
+}
+document.querySelectorAll(".nav-item").forEach(n=>n.addEventListener("click", ()=>showPage(n.dataset.page)));
+
+/* ===================== ACCOUNT MENU ===================== */
+function toggleAccountMenu(){ document.getElementById("accountMenu").classList.toggle("open"); }
+document.addEventListener("click", e=>{
+  const menu = document.getElementById("accountMenu");
+  if (menu && !menu.contains(e.target)) menu.classList.remove("open");
+  const notif = document.getElementById("notifWrap");
+  if (notif && !notif.contains(e.target)) notif.classList.remove("open");
+  const sw = document.getElementById("searchWrap");
+  if (sw && !sw.contains(e.target)) document.getElementById("searchResults")?.classList.remove("show");
+});
+
+/* ===================== NOTIFICATIONS ===================== */
+function nextNotifId(){
+  const u = getCurrentUser(); if (!u) return Date.now();
+  u.nextNotifId = (u.nextNotifId || 1) + 1;
+  return u.nextNotifId - 1;
+}
+function timeAgo(ts){
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff/60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins/60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs/24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(ts).toLocaleDateString();
+}
+function getNotifIcon(type){
+  return type==='storm' ? '⛈' : type==='risk' ? '⚠' : type==='issues' ? '!' : type==='good' ? '✓' : 'ℹ';
+}
+function ensureNotifFields(){
+  const u = getCurrentUser(); if (!u) return;
+  if (!u.notifications) u.notifications = [];
+  if (!u.notifPrefs) u.notifPrefs = { push: true, email: false };
+}
+function generateNotifications(){
+  const u = getCurrentUser(); if (!u) return;
+  ensureNotifFields();
+  const sites = u.sites || [];
+
+  // Welcome (only if no notifications at all)
+  if (u.notifications.length === 0) {
+    u.notifications.push({
+      id: nextNotifId(), type:'info',
+      title: 'Welcome to Inspectra AI',
+      body: 'Get started by adding your first site, then run an inspection from Field Mode.',
+      timestamp: Date.now() - 1000*60*5, read: false
+    });
+  }
+
+  // High-risk site alerts (one per high-risk site, only if not already there)
+  sites.filter(s => s.risk >= 70 && s.status === 'active').forEach(s => {
+    if (!u.notifications.some(n => n.type === 'risk' && n.siteId === s.id)) {
+      u.notifications.unshift({
+        id: nextNotifId(), type:'risk',
+        title: `High risk: ${s.name}`,
+        body: `Risk score ${s.risk}/100 — recommend inspection within 24 hours.`,
+        timestamp: Date.now() - 1000*60*60*Math.floor(Math.random()*4 + 1), read: false, siteId: s.id
+      });
+    }
+  });
+
+  // Storm alert (single one if active sites exist)
+  if (sites.some(s => s.status === 'active') && !u.notifications.some(n => n.type === 'storm')) {
+    u.notifications.unshift({
+      id: nextNotifId(), type:'storm',
+      title: 'Heavy rainfall detected',
+      body: '1.7" measured in past 24h — exceeded 0.5" SWPPP threshold. Active sites flagged for post-storm inspection.',
+      timestamp: Date.now() - 1000*60*60*6, read: false
+    });
+  }
+
+  // Open issues (only if there are open issues and no recent issue notification)
+  const openCount = sites.reduce((sum, s) => sum + (s.issues||[]).filter(i => i.status === 'open').length, 0);
+  if (openCount > 0) {
+    const last = u.notifications.find(n => n.type === 'issues');
+    if (!last || (Date.now() - last.timestamp) > 1000*60*60*24) {
+      u.notifications.unshift({
+        id: nextNotifId(), type:'issues',
+        title: `${openCount} open issue${openCount === 1 ? '' : 's'} need attention`,
+        body: 'You have unresolved deficiencies across your sites. Review and assign to contractors.',
+        timestamp: Date.now() - 1000*60*30, read: false
+      });
+    }
+  }
+
+  // Sort newest first, cap at 50
+  u.notifications.sort((a,b) => b.timestamp - a.timestamp);
+  if (u.notifications.length > 50) u.notifications = u.notifications.slice(0, 50);
+  persist();
+  updateBellBadge();
+}
+
+function toggleNotifPanel(e){
+  if (e) e.stopPropagation();
+  const wrap = document.getElementById('notifWrap');
+  const wasOpen = wrap.classList.contains('open');
+  document.getElementById('accountMenu')?.classList.remove('open');
+  wrap.classList.toggle('open');
+  if (!wasOpen) renderNotifs();
+}
+
+function renderNotifs(){
+  const u = getCurrentUser(); if (!u) return;
+  ensureNotifFields();
+  document.getElementById('prefPush').checked = !!u.notifPrefs.push;
+  document.getElementById('prefEmail').checked = !!u.notifPrefs.email;
+
+  const list = document.getElementById('notifList');
+  if (u.notifications.length === 0) {
+    list.innerHTML = `<div class="empty-state" style="padding:32px 20px;"><p style="margin:0; font-size:13px;">No notifications yet.</p></div>`;
+  } else {
+    list.innerHTML = u.notifications.map(n => `
+      <div class="notif-item ${n.read ? '' : 'unread'} type-${n.type}" onclick="readNotif(${n.id})">
+        <div class="notif-icon">${getNotifIcon(n.type)}</div>
+        <div class="notif-content">
+          <div class="notif-title">${escapeHtml(n.title)}</div>
+          <div class="notif-body">${escapeHtml(n.body)}</div>
+          <div class="notif-time">${timeAgo(n.timestamp)}</div>
+        </div>
+        ${!n.read ? '<div class="notif-dot"></div>' : ''}
+      </div>`).join("");
+  }
+  updateBellBadge();
+}
+
+function updateBellBadge(){
+  const u = getCurrentUser();
+  const badge = document.getElementById('bellBadge');
+  if (!badge) return;
+  if (!u || !u.notifications || !u.notifPrefs || u.notifPrefs.push === false) { badge.style.display = 'none'; return; }
+  const unread = u.notifications.filter(n => !n.read).length;
+  badge.style.display = unread > 0 ? '' : 'none';
+}
+
+function readNotif(id){
+  const u = getCurrentUser(); if (!u || !u.notifications) return;
+  const n = u.notifications.find(x => x.id === id);
+  if (!n) return;
+  n.read = true;
+  persist();
+  if (n.siteId) {
+    document.getElementById('notifWrap').classList.remove('open');
+    openSite(n.siteId);
+  }
+  renderNotifs();
+}
+
+function markAllRead(){
+  const u = getCurrentUser(); if (!u || !u.notifications) return;
+  u.notifications.forEach(n => n.read = true);
+  persist();
+  renderNotifs();
+}
+
+function togglePref(key, value){
+  const u = getCurrentUser(); if (!u) return;
+  ensureNotifFields();
+  u.notifPrefs[key] = value;
+  persist();
+  updateBellBadge();
+  toast(`${key === 'push' ? 'Push notifications' : 'Email summary'} ${value ? 'enabled' : 'disabled'}`);
+}
+
+/* ===================== GLOBAL SEARCH ===================== */
+function highlightMatch(text, query){
+  if (!text || !query) return escapeHtml(text || "");
+  const safe = escapeHtml(text);
+  const safeQ = escapeHtml(query);
+  const re = new RegExp(`(${safeQ.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'ig');
+  return safe.replace(re, '<mark>$1</mark>');
+}
+
+function performSearch(query){
+  const results = document.getElementById("searchResults");
+  if (!query || !query.trim()) { results.classList.remove("show"); results.innerHTML = ""; return; }
+  const q = query.trim().toLowerCase();
+  const sites = MY_SITES();
+  const matched = sites.filter(s => {
+    return (s.name||"").toLowerCase().includes(q)
+      || (s.permit||"").toLowerCase().includes(q)
+      || (s.county||"").toLowerCase().includes(q)
+      || (s.address||"").toLowerCase().includes(q)
+      || (s.dev||"").toLowerCase().includes(q);
+  });
+
+  if (matched.length === 0) {
+    results.innerHTML = `<div class="sr-empty">No sites match "<strong style="color:var(--text-1);">${escapeHtml(query)}</strong>". Try a different search.</div>`;
+  } else {
+    const head = `<div class="sr-section-title">Sites · ${matched.length} match${matched.length===1?'':'es'}</div>`;
+    results.innerHTML = head + matched.slice(0, 10).map(s => `
+      <div class="sr-item" onclick="pickSearchResult(${s.id})">
+        <div class="sr-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+        </div>
+        <div class="sr-content">
+          <div class="sr-title">${highlightMatch(s.name, query)}</div>
+          <div class="sr-sub">${highlightMatch(s.permit||'', query)}${s.permit?' · ':''}${highlightMatch(s.county||'', query)}${s.county?' Co. · ':''}<span class="risk-pill risk-${riskBucket(s.risk)}" style="font-size:10px;padding:1px 6px;">${riskLabel(s.risk)} · ${s.risk}</span></div>
+        </div>
+      </div>`).join("");
+  }
+  results.classList.add("show");
+}
+
+function pickSearchResult(siteId){
+  document.getElementById("searchResults").classList.remove("show");
+  document.getElementById("globalSearch").value = "";
+  openSite(siteId);
+}
+
+document.getElementById("globalSearch")?.addEventListener("input", e => performSearch(e.target.value));
+document.getElementById("globalSearch")?.addEventListener("focus", e => { if (e.target.value) performSearch(e.target.value); });
+document.getElementById("globalSearch")?.addEventListener("keydown", e => {
+  if (e.key === "Escape") { document.getElementById("searchResults").classList.remove("show"); e.target.blur(); }
+  if (e.key === "Enter") {
+    const first = document.querySelector("#searchResults .sr-item");
+    if (first) first.click();
+  }
+});
+
+/* ===================== MAP ===================== */
+let map, map2, mapLayer, map2Layer;
+function buildPin(level){ return L.divIcon({ className:"", html:`<div class="pin r-${level}"></div>`, iconSize:[18,18], iconAnchor:[9,18] }); }
+function popupHtml(s){
+  return `<div style="font-family:inherit; min-width:220px;">
+    <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#f1f1f1;">${s.name}</div>
+    <div style="font-size:11.5px; color:#b5b5b5;">${s.permit||"No permit"} · ${s.county||"—"} Co.</div>
+    <div style="margin:8px 0; display:flex; gap:6px; flex-wrap:wrap;">
+      <span style="background:${riskColor(s.risk)}33; color:${riskColor(s.risk)}; padding:2px 8px; border-radius:99px; font-size:11px; font-weight:600;">● ${riskLabel(s.risk)} · ${s.risk}</span>
+      <span style="background:rgba(148,160,173,.18); color:#94a0ad; padding:2px 8px; border-radius:99px; font-size:11px; font-weight:600;">${statusLabel(s.status)}</span>
+    </div>
+    <div style="font-size:12px; color:#b5b5b5;">Last visit: ${s.lastInsp||"Not yet"}</div>
+    <button onclick="openSite(${s.id})" style="margin-top:10px; width:100%; padding:7px; background:#d4d4d4; border:none; border-radius:7px; color:#1a1a1a; font-weight:600; cursor:pointer; font-family:inherit;">Open Site →</button>
+  </div>`;
+}
+function initMap(){
+  map = L.map("map", { zoomControl:true, attributionControl:false }).setView([33.5, -86.75], 9);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom:19, subdomains:"abcd" }).addTo(map);
+  mapLayer = L.layerGroup().addTo(map);
+  refreshMapMarkers();
+  setTimeout(()=>map.invalidateSize(), 200);
+}
+function initMap2(){
+  map2 = L.map("map2", { zoomControl:true, attributionControl:false }).setView([33.5, -86.75], 9);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom:19, subdomains:"abcd" }).addTo(map2);
+  map2Layer = L.layerGroup().addTo(map2);
+  refreshMap2Markers();
+  window._map2Init = true;
+  setTimeout(()=>map2.invalidateSize(), 50);
+  setTimeout(()=>map2.invalidateSize(), 200);
+}
+function refreshMapMarkers(){
+  if (!mapLayer) return;
+  mapLayer.clearLayers();
+  const sites = MY_SITES();
+  sites.forEach(s=>L.marker([s.lat, s.lng], { icon: buildPin(riskBucket(s.risk)) }).bindPopup(popupHtml(s)).addTo(mapLayer));
+  if (sites.length > 0 && map) map.fitBounds(L.latLngBounds(sites.map(s => [s.lat, s.lng])), { padding: [40, 40], maxZoom: 11 });
+}
+function refreshMap2Markers(){
+  if (!map2Layer) return;
+  map2Layer.clearLayers();
+  const completed = MY_SITES().filter(s => s.lastInsp);
+  completed.forEach(s=>L.marker([s.lat, s.lng], { icon: buildPin(riskBucket(s.risk)) }).bindPopup(popupHtml(s)).addTo(map2Layer));
+  if (completed.length > 0 && map2) map2.fitBounds(L.latLngBounds(completed.map(s => [s.lat, s.lng])), { padding: [60, 60], maxZoom: 11 });
+  const empty = document.getElementById("map2Empty");
+  if (empty) empty.style.display = completed.length ? "none" : "flex";
+}
+
+/* ===================== DASHBOARD ===================== */
+function renderDashboard(){
+  const el = document.getElementById("dashboardContent");
+  const sites = MY_SITES();
+  const u = getCurrentUser();
+  if (sites.length === 0) {
+    el.innerHTML = `
+      <div class="greeting">
+        <div class="greeting-emoji">👋</div>
+        <div class="greeting-text">
+          <h2>Welcome${u ? ", " + u.name.split(" ")[0] : ""}</h2>
+          <p>Let's get you set up. Start by adding your first site${isOwner() ? ", or load some sample data to explore" : ""}.</p>
+        </div>
+        <div class="greeting-actions">
+          <button class="btn-primary" onclick="openAddSite()">+ Add Your First Site</button>
+          ${isOwner() ? '<button class="btn-ghost" onclick="loadSampleData()">Load Sample Data</button>' : ''}
+        </div>
+      </div>
+      <div class="grid-2" style="margin-bottom: 18px;">
+        <div class="card">
+          <div class="card-title">Getting Started</div>
+          <div style="display:flex; flex-direction:column; gap:14px; padding:8px 0;">
+            ${[1,2,3,4].map((n,i)=>{
+              const titles = ["Add your first site","Run an inspection in Field Mode","Generate your first report","Set up storm-triggered alerts"];
+              const subs = ["Enter site details, address or GPS, and permit info.","Upload photos, log issues, and dictate voice notes.","Auto-formatted to ADEM/SWPPP standards. Export to PDF.","Get notified when rainfall exceeds your threshold."];
+              return `<div style="display:flex; gap:14px; align-items:center;">
+                <div style="width:36px; height:36px; border-radius:50%; background:var(--bg-3); border:1px solid var(--line-2); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:var(--text-2);">${n}</div>
+                <div style="flex:1;"><div style="font-weight:600; font-size:14px;">${titles[i]}</div><div style="font-size:12.5px; color:var(--text-3); margin-top:2px;">${subs[i]}</div></div>
+              </div>`;
+            }).join("")}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Live Weather Intelligence</div>
+          <div class="weather-now">
+            <div class="weather-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f1f1f1" stroke-width="2"><path d="M17 18a4 4 0 0 0 0-8 6 6 0 0 0-11.7-1.5A4 4 0 0 0 6 17"/><line x1="8" y1="20" x2="8" y2="22"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="16" y1="20" x2="16" y2="22"/></svg></div>
+            <div style="flex:1;"><div class="weather-temp">62°F · Rain</div><div style="font-size:12.5px; color:var(--text-2);">Birmingham, AL · 1.7" past 24h</div></div>
+          </div>
+          <div class="divider"></div>
+          <canvas id="rainSpark" height="80"></canvas>
+        </div>
+      </div>`;
+    drawRainSpark();
+    return;
+  }
+  const myActive = sites.filter(s=>s.status==="active").length;
+  const totalOpen = sites.reduce((sum,s)=>sum+(s.openIssues||0), 0);
+  const high = sites.filter(s=>riskBucket(s.risk)==="high").length;
+  const totalNotes = sites.reduce((sum,s)=>sum+(s.voiceNotes||[]).length, 0);
+
+  el.innerHTML = `
+    <div class="greeting">
+      <div class="greeting-emoji">☕</div>
+      <div class="greeting-text">
+        <h2>Good morning, ${u.name.split(" ")[0]}</h2>
+        <p>You've got <strong>${sites.length} site${sites.length===1?"":"s"} logged</strong>${high>0?` and <strong>${high} need${high===1?"s":""} attention</strong> today.`:` and everything's looking good today.`}</p>
+      </div>
+      <div class="greeting-actions"><button class="btn-primary" onclick="showPage('inspect')">Start your day</button></div>
+    </div>
+    <div class="hero">
+      <div class="card map-card">
+        <div id="map"></div>
+        <div class="map-overlay"><div style="font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:1px; font-weight:600;">Your Sites</div><div style="font-weight:600; margin-top:2px;">${sites.length} logged</div></div>
+        <div class="legend"><div style="font-weight:600; margin-bottom:6px;">Risk Level</div><div class="row"><div class="dot" style="background:var(--good);"></div>Looking good</div><div class="row"><div class="dot" style="background:var(--warn);"></div>Worth a look</div><div class="row"><div class="dot" style="background:var(--bad);"></div>Needs attention</div></div>
+      </div>
+      <div class="weather-stack">
+        <div class="card">
+          <div class="card-title">Live Weather Intelligence</div>
+          <div class="weather-now">
+            <div class="weather-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f1f1f1" stroke-width="2"><path d="M17 18a4 4 0 0 0 0-8 6 6 0 0 0-11.7-1.5A4 4 0 0 0 6 17"/><line x1="8" y1="20" x2="8" y2="22"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="16" y1="20" x2="16" y2="22"/></svg></div>
+            <div style="flex:1;"><div class="weather-temp">62°F · Rain</div><div style="font-size:12.5px; color:var(--text-2);">Birmingham, AL · 1.7" past 24h</div></div>
+          </div>
+          <div class="divider"></div>
+          <canvas id="rainSpark" height="80"></canvas>
+        </div>
+        <div class="alert bad">
+          <div class="alert-icon">⚠</div>
+          <div><div class="ttl">Rainfall threshold exceeded</div><div class="desc">1.7" measured in past 24h — over your 0.5" SWPPP trigger.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="stat-grid" style="margin-bottom:18px;">
+      <div class="stat"><div class="label">Active Sites</div><div class="value">${myActive}</div></div>
+      <div class="stat"><div class="label">Total Sites</div><div class="value">${sites.length}</div></div>
+      <div class="stat"><div class="label">Open Issues</div><div class="value" style="color:${totalOpen>0?'var(--warn)':'var(--text-1)'};">${totalOpen}</div></div>
+      <div class="stat"><div class="label">Voice Notes</div><div class="value">${totalNotes}</div></div>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:14px;"><div><div class="card-title">Today's Priority List</div><div style="font-size:13px; color:var(--text-2);">Sorted by risk score across your sites.</div></div><div class="grow"></div></div>
+      <div class="table-wrap"><table id="prioTable"><thead><tr><th>#</th><th>Site</th><th>Permit</th><th>Status</th><th>Risk</th><th>Last Visit</th><th></th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="charts-grid">
+      <div class="card"><div class="card-title">Activity · Last 12 weeks</div><div class="chart-box"><canvas id="trendChart"></canvas></div></div>
+      <div class="card"><div class="card-title">How your portfolio looks today</div><div class="chart-box"><canvas id="riskPie"></canvas></div></div>
+    </div>`;
+  initMap();
+  drawRainSpark();
+  drawHero();
+  renderPriorityTable();
+}
+
+/* ===================== SITES ===================== */
+function renderSites(){
+  const el = document.getElementById("sitesContent");
+  const sites = MY_SITES();
+  if (sites.length === 0) {
+    el.innerHTML = `
+      <div class="card">
+        <div class="empty-state">
+          <div class="em-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7a7a7a" stroke-width="1.8"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg></div>
+          <h3>No sites logged yet</h3>
+          <p>Start tracking your construction sites by adding the first one.</p>
+          <div class="actions"><button class="btn-primary" onclick="openAddSite()">+ Add Your First Site</button>${isOwner() ? '<button class="btn-ghost" onclick="loadSampleData()">Load Sample Data</button>' : ''}</div>
+        </div>
+      </div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="card">
+      <div class="row" style="margin-bottom:14px; gap:10px; flex-wrap:wrap;">
+        <select class="btn-ghost" id="filterStatus"><option value="all">All Statuses</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="completed">Completed</option></select>
+        <select class="btn-ghost" id="filterRisk"><option value="all">All Risk Levels</option><option value="high">Needs attention</option><option value="med">Worth a look</option><option value="low">Looking good</option></select>
+        <input class="btn-ghost" id="filterText" placeholder="Find by name, permit, or county..." style="flex:1; min-width:220px;" />
+        <button class="btn-ghost" onclick="if(confirm('Clear all your sites? This cannot be undone.')){const u=getCurrentUser();u.sites=[];persist();refreshAll();}">Clear All</button>
+        <button class="btn-primary" onclick="openAddSite()">+ Add Site</button>
+      </div>
+      <div class="table-wrap"><table id="sitesTable"><thead><tr><th>Site Name</th><th>Permit #</th><th>County</th><th>Address / GPS</th><th>Status</th><th>Risk</th><th>Last Visit</th><th>Open</th></tr></thead><tbody></tbody></table></div>
+    </div>`;
+  ["filterStatus","filterRisk","filterText"].forEach(id=>{
+    document.getElementById(id).addEventListener("input", renderSitesTable);
+    document.getElementById(id).addEventListener("change", renderSitesTable);
+  });
+  renderSitesTable();
+}
+function renderSitesTable(){
+  const fs = document.getElementById("filterStatus")?.value || "all";
+  const fr = document.getElementById("filterRisk")?.value || "all";
+  const ft = (document.getElementById("filterText")?.value || "").toLowerCase();
+  const list = MY_SITES().filter(s=>{
+    if (fs!=="all" && s.status!==fs) return false;
+    if (fr!=="all" && riskBucket(s.risk)!==fr) return false;
+    if (ft && !((s.name||"").toLowerCase().includes(ft) || (s.permit||"").toLowerCase().includes(ft) || (s.county||"").toLowerCase().includes(ft))) return false;
+    return true;
+  });
+  const tbody = document.querySelector("#sitesTable tbody");
+  if (!tbody) return;
+  if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state" style="padding:30px;"><h3>No matches</h3><p>Try widening your search.</p></div></td></tr>`; return; }
+  tbody.innerHTML = list.map(s=>`
+    <tr onclick="openSite(${s.id})">
+      <td><b>${s.name}</b></td>
+      <td>${s.permit || "—"}</td>
+      <td>${s.county || "—"}</td>
+      <td style="font-size:11.5px; color:var(--text-3);">${s.address ? s.address : `${s.lat.toFixed(3)}, ${s.lng.toFixed(3)}`}</td>
+      <td><span class="status-pill status-${s.status}">${statusLabel(s.status)}</span></td>
+      <td><span class="risk-pill risk-${riskBucket(s.risk)}">● ${s.risk}</span></td>
+      <td>${s.lastInsp || "Not yet"}</td>
+      <td>${(s.openIssues||0)>0 ? `<b style="color:var(--warn);">${s.openIssues}</b>` : "0"}</td>
+    </tr>`).join("");
+}
+function renderPriorityTable(){
+  const top = [...MY_SITES()].filter(s=>s.status==="active").sort((a,b)=>b.risk-a.risk).slice(0,8);
+  const tbody = document.querySelector("#prioTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = top.map((s,i)=>`
+    <tr onclick="openSite(${s.id})">
+      <td style="font-weight:700; color:var(--text-3);">${i+1}</td>
+      <td><b>${s.name}</b><div style="font-size:11.5px; color:var(--text-3); margin-top:2px;">${s.county||"—"} Co.</div></td>
+      <td>${s.permit||"—"}</td>
+      <td><span class="status-pill status-${s.status}">${statusLabel(s.status)}</span></td>
+      <td><span class="score-bar"><span style="width:${s.risk}%; background:${riskColor(s.risk)};"></span></span><b>${s.risk}</b></td>
+      <td>${s.lastInsp||"Not yet"}</td>
+      <td><button class="btn-ghost" onclick="event.stopPropagation(); openSite(${s.id})">Open →</button></td>
+    </tr>`).join("");
+}
+
+/* ===================== FIELD MODE ===================== */
+let activeFieldSiteId = null;
+function getActiveFieldSite(){
+  const sites = MY_SITES();
+  if (activeFieldSiteId) { const s = sites.find(x=>x.id===activeFieldSiteId); if (s) return s; }
+  return sites[0];
+}
+function renderField(){
+  const el = document.getElementById("fieldContent");
+  const sites = MY_SITES();
+  if (sites.length === 0) {
+    el.innerHTML = `
+      <div class="card">
+        <div class="empty-state">
+          <div class="em-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7a7a7a" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <h3>Add a site first</h3>
+          <p>Field Mode is for logging inspections at sites you've added.</p>
+          <div class="actions"><button class="btn-primary" onclick="openAddSite()">+ Add Your First Site</button>${isOwner() ? '<button class="btn-ghost" onclick="loadSampleData()">Load Sample Data</button>' : ''}</div>
+        </div>
+      </div>`;
+    return;
+  }
+  const s = getActiveFieldSite();
+  activeFieldSiteId = s.id;
+
+  el.innerHTML = `
+    <div class="field-header">
+      <div class="field-header-row">
+        <div><div style="font-size:11px; color:var(--text-3); letter-spacing:1px; font-weight:600; text-transform:uppercase;">You're inspecting</div><div style="margin-top:4px;"><select id="fieldSiteSelect"></select></div></div>
+        <div class="grow"></div>
+        <div style="text-align:right;"><div style="font-size:11px; color:var(--text-3); letter-spacing:1px; font-weight:600; text-transform:uppercase;">Inspection ID</div><div style="font-family:monospace; font-size:13px; margin-top:4px;">INS-${new Date().toISOString().slice(0,10)}-${String(s.id).padStart(3,"0")}</div></div>
+      </div>
+      <div class="field-meta" id="fieldMeta"></div>
+    </div>
+
+    <div class="quick-actions">
+      <button class="qa-btn primary" onclick="toast('Photo saved with GPS + timestamp')">
+        <div class="qa-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+        <div class="qa-text"><div class="qa-title">Add Photo</div><div class="qa-sub">GPS + time auto-tagged</div></div>
+      </button>
+      <button class="qa-btn" onclick="openLogIssue()">
+        <div class="qa-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f1f1f1" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="qa-text"><div class="qa-title">Log Issue</div><div class="qa-sub">Track to resolution</div></div>
+      </button>
+      <button class="qa-btn" onclick="openVoiceNote()">
+        <div class="qa-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f1f1f1" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div>
+        <div class="qa-text"><div class="qa-title">Voice Note</div><div class="qa-sub">${hasAccess('documentation') ? 'Auto SWPPP language' : 'Manual entry · upgrade for AI'}</div></div>
+      </button>
+      <button class="qa-btn" onclick="openMarkCompliant()">
+        <div class="qa-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f1f1f1" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+        <div class="qa-text"><div class="qa-title">Mark Compliant</div><div class="qa-sub">For passing items</div></div>
+      </button>
+    </div>
+
+    <div class="field-grid">
+      <div>
+        <div class="card" style="margin-bottom:18px;">
+          <div class="row" style="margin-bottom:8px;"><div class="card-title" style="margin:0;">Voice Notes <span style="color:var(--text-3); font-weight:500;">(${(s.voiceNotes||[]).length})</span></div><div class="grow"></div><button class="btn-ghost" style="padding:6px 10px; font-size:12px;" onclick="openVoiceNote()">+ New</button></div>
+          <div id="fieldNotes">${renderVoiceNotesList(s)}</div>
+        </div>
+        <div class="card" style="margin-bottom:18px;">
+          <div class="row" style="margin-bottom:8px;"><div class="card-title" style="margin:0;">Issues Logged <span style="color:var(--text-3); font-weight:500;">(${(s.issues||[]).length})</span></div><div class="grow"></div><button class="btn-ghost" style="padding:6px 10px; font-size:12px;" onclick="openLogIssue()">+ New</button></div>
+          <div id="fieldIssues">${renderIssuesList(s)}</div>
+        </div>
+        <div class="card">
+          <div class="row" style="margin-bottom:8px;"><div class="card-title" style="margin:0;">Marked Compliant <span style="color:var(--text-3); font-weight:500;">(${(s.compliance||[]).length})</span></div><div class="grow"></div><button class="btn-ghost" style="padding:6px 10px; font-size:12px;" onclick="openMarkCompliant()">+ New</button></div>
+          <div id="fieldCompliance">${renderComplianceList(s)}</div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:18px;">
+          <div class="row" style="margin-bottom:8px;"><div class="card-title" style="margin:0;">Smart Inspection Checklist</div><div class="grow"></div><span id="checkProg" style="font-size:12px; color:var(--text-3);">0 of 6</span></div>
+          <div class="checklist-progress"><span id="checkProgBar" style="width:0%;"></span></div>
+          <div id="checklistBody">
+            <div class="checklist-item" data-key="silt"><div class="check"></div><div class="check-text">Perimeter silt fence intact</div><div class="check-meta">SWPPP §4.2.1</div></div>
+            <div class="checklist-item" data-key="inlet"><div class="check"></div><div class="check-text">Inlet protection in place</div><div class="check-meta">SWPPP §4.3.2</div></div>
+            <div class="checklist-item" data-key="basin"><div class="check"></div><div class="check-text">Sediment basin within capacity</div><div class="check-meta">ADEM r. 335-6-12</div></div>
+            <div class="checklist-item" data-key="entrance"><div class="check"></div><div class="check-text">Stabilized construction entrance</div><div class="check-meta">SWPPP §4.4.1</div></div>
+            <div class="checklist-item" data-key="trackout"><div class="check"></div><div class="check-text">No off-site sediment tracking</div><div class="check-meta">CGP Part 2.2.4</div></div>
+            <div class="checklist-item" data-key="washout"><div class="check"></div><div class="check-text">Concrete washout contained</div><div class="check-meta">SWPPP §5.1</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Connectivity</div>
+          <div class="alert info" style="padding:12px;"><div class="alert-icon">●</div><div><div class="ttl" style="font-size:13px;">Connected — auto-syncing</div><div class="desc" style="font-size:12px;">All photos, notes, issues, and compliance entries are saved automatically.</div></div></div>
+        </div>
+      </div>
+    </div>`;
+  const sel = document.getElementById("fieldSiteSelect");
+  sel.innerHTML = sites.map(x => `<option value="${x.id}" ${x.id===s.id?"selected":""}>${x.name}</option>`).join("");
+  sel.addEventListener("change", e=>{ activeFieldSiteId = parseInt(e.target.value, 10); renderField(); });
+  updateFieldHeader();
+}
+function renderVoiceNotesList(s){
+  const notes = s.voiceNotes || [];
+  if (notes.length === 0) return `<div class="empty-state" style="padding:24px 12px;"><p style="margin:0; font-size:13px;">No voice notes yet.</p></div>`;
+  return notes.map(n => `<div class="log-item"><div class="log-item-head"><div class="log-item-title">🎙️ Voice Note</div><div class="log-item-time">${n.timestamp}</div></div><div class="log-item-body">${escapeHtml(n.text)}</div><div class="log-item-actions"><button onclick="deleteVoiceNote(${n.id})">Delete</button></div></div>`).join("");
+}
+function renderIssuesList(s){
+  const issues = s.issues || [];
+  if (issues.length === 0) return `<div class="empty-state" style="padding:24px 12px;"><p style="margin:0; font-size:13px;">No issues logged yet.</p></div>`;
+  return issues.map(i => `<div class="log-item ${severityClass(i.severity)}"><div class="log-item-head"><div class="log-item-title">${escapeHtml(i.title)}</div><span class="pill-soft pill-${severityClass(i.severity)==='good'?'green':severityClass(i.severity)==='warn'?'warn':'bad'}">${severityLabel(i.severity)}</span><span class="status-pill status-${i.status==='open'?'open':'resolved'}">${i.status==='open'?'OPEN':'RESOLVED'}</span><div class="log-item-time">${i.timestamp}</div></div><div class="log-item-body"><b>${escapeHtml(i.bmp)}</b>${i.description ? ' · ' + escapeHtml(i.description) : ''}</div><div class="log-item-actions">${i.status==='open' ? `<button onclick="resolveIssue(${i.id})">Mark Resolved</button>` : `<button onclick="reopenIssue(${i.id})">Reopen</button>`}<button onclick="deleteIssue(${i.id})">Delete</button></div></div>`).join("");
+}
+function renderComplianceList(s){
+  const list = s.compliance || [];
+  if (list.length === 0) return `<div class="empty-state" style="padding:24px 12px;"><p style="margin:0; font-size:13px;">No compliance entries yet.</p></div>`;
+  return list.map(c => `<div class="log-item good"><div class="log-item-head"><div class="log-item-title">✓ ${escapeHtml(c.item)}</div><div class="log-item-time">${c.timestamp}</div></div>${c.notes ? `<div class="log-item-body">${escapeHtml(c.notes)}</div>` : ''}<div class="log-item-actions"><button onclick="deleteCompliance(${c.id})">Delete</button></div></div>`).join("");
+}
+function updateFieldHeader(){
+  const s = getActiveFieldSite();
+  if (!s) return;
+  const meta = document.getElementById("fieldMeta");
+  if (!meta) return;
+  meta.innerHTML = `
+    <span class="status-pill status-${s.status}">${statusLabel(s.status)}</span>
+    <span class="risk-pill risk-${riskBucket(s.risk)}">● ${riskLabel(s.risk)} · ${s.risk}</span>
+    ${s.permit ? `<span class="pill-soft pill-blue">${s.permit}</span>` : ""}
+    ${s.address ? `<span class="pill-soft pill-gray">📍 ${escapeHtml(s.address)}</span>` : `<span class="pill-soft pill-gray">📍 ${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</span>`}
+    ${s.county ? `<span class="pill-soft pill-gray">${s.county} County</span>` : ""}
+    ${s.lastInsp ? `<span class="pill-soft pill-gray">Last: ${s.lastInsp}</span>` : `<span class="pill-soft pill-gray">First visit</span>`}
+  `;
+}
+document.addEventListener("click", e=>{
+  const item = e.target.closest(".checklist-item");
+  if (!item) return;
+  item.classList.toggle("done");
+  const items = document.querySelectorAll("#checklistBody .checklist-item");
+  const done = document.querySelectorAll("#checklistBody .checklist-item.done");
+  if (items.length) {
+    const pct = Math.round((done.length/items.length)*100);
+    document.getElementById("checkProgBar").style.width = pct + "%";
+    document.getElementById("checkProg").textContent = `${done.length} of ${items.length}`;
+  }
+});
+
+/* ===================== STORM ===================== */
+function renderStorm(){
+  const el = document.getElementById("stormSitesContent");
+  if (!el) return;
+  const sites = MY_SITES();
+  if (sites.length === 0) { el.innerHTML = `<div class="empty-state" style="padding:30px;"><p style="margin:0;">Add sites to get post-storm inspection alerts.</p></div>`; return; }
+  const flagged = sites.filter(s => s.status==="active");
+  if (flagged.length === 0) { el.innerHTML = `<div class="empty-state" style="padding:30px;"><p style="margin:0;">No active sites.</p></div>`; return; }
+  el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Site</th><th>Trigger</th><th>Rainfall</th><th>Flagged</th><th>Deadline</th><th>Status</th></tr></thead><tbody>${flagged.map(s=>`<tr onclick="openSite(${s.id})"><td>${s.name}</td><td>${s.trigger||"Routine"}</td><td>${s.rain||"—"}</td><td>Apr 27 14:30</td><td>Apr 28 14:30</td><td><span class="status-pill status-active">PENDING</span></td></tr>`).join("")}</tbody></table></div>`;
+}
+
+/* ===================== REPORTS (Documentation AI gated) ===================== */
+function renderReports(){
+  const el = document.getElementById("reportsContent");
+  const sites = MY_SITES();
+  if (sites.length === 0) {
+    el.innerHTML = `<div class="card"><div class="empty-state"><div class="em-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7a7a7a" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3>No reports yet</h3><p>Add sites and run inspections — your reports will appear here.</p><div class="actions"><button class="btn-primary" onclick="openAddSite()">+ Add Your First Site</button></div></div></div>`;
+    return;
+  }
+  const s = sites[0];
+  const issuesList = (s.issues || []).filter(i => i.status === 'open');
+  const compliantList = (s.compliance || []);
+  const notesList = (s.voiceNotes || []);
+
+  // If user doesn't have Documentation AI, show locked
+  if (!hasAccess('documentation')) {
+    el.innerHTML = `
+      <div class="locked-card">
+        <div class="lock-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <h3>Auto-Generated Reports require Documentation AI</h3>
+        <p>Subscribe to Documentation AI ($9.99/month) to unlock auto-generated, ADEM-formatted inspection reports with PDF export. Your manual data is always free to access — only AI features require a subscription.</p>
+        <button class="btn-primary" onclick="startCheckout('documentation')">Subscribe to Documentation AI · $9.99/mo</button>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Inspection Report Preview · ${s.name}</div>
+        <div style="background:#f5f5f3; color:#1a1a1a; border-radius:9px; padding:24px; font-size:12px; line-height:1.55; max-height:540px; overflow:auto;">
+          <div style="border-bottom:2px solid #1a1a1a; padding-bottom:10px; margin-bottom:14px;">
+            <div style="font-weight:700; font-size:18px; letter-spacing:-.3px;">Inspection Report</div>
+            <div style="font-size:10.5px; color:#666; margin-top:3px;">SWPPP / ADEM-Formatted</div>
+          </div>
+          <table style="width:100%; font-size:11px; margin-bottom:14px;">
+            <tr><td style="font-weight:700; padding:3px 6px;">Site</td><td>${s.name}</td><td style="font-weight:700;">Date</td><td>${nowStr()}</td></tr>
+            <tr><td style="font-weight:700; padding:3px 6px;">Permit #</td><td>${s.permit||"—"}</td><td style="font-weight:700;">Inspector</td><td>${getCurrentUser().name}</td></tr>
+            <tr><td style="font-weight:700; padding:3px 6px;">Location</td><td colspan="3">${s.address ? s.address : `${s.lat.toFixed(4)}° N, ${Math.abs(s.lng).toFixed(4)}° W`}</td></tr>
+          </table>
+          <div style="font-weight:700; border-top:1px solid #ccc; padding-top:6px; margin-bottom:5px;">1. Compliance Summary</div>
+          <p>Inspection performed pursuant to ADEM Admin. Code r. 335-6-12-.13. ${compliantList.length > 0 ? `${compliantList.length} item${compliantList.length===1?'':'s'} verified compliant. ` : ''}${issuesList.length > 0 ? `${issuesList.length} deficienc${issuesList.length===1?'y':'ies'} noted requiring corrective action.` : 'No deficiencies noted at this time.'}</p>
+          ${issuesList.length > 0 ? `<div style="font-weight:700; border-top:1px solid #ccc; padding-top:6px; margin:10px 0 5px;">2. Deficiencies Observed</div><ol style="padding-left:18px;">${issuesList.map(i=>`<li><b>${escapeHtml(i.title)}</b> (${escapeHtml(i.bmp)}, ${severityLabel(i.severity)}) — ${escapeHtml(i.description||'No further description.')}</li>`).join('')}</ol>` : ''}
+          ${compliantList.length > 0 ? `<div style="font-weight:700; border-top:1px solid #ccc; padding-top:6px; margin:10px 0 5px;">${issuesList.length>0 ? '3' : '2'}. Items Verified Compliant</div><ul style="padding-left:18px;">${compliantList.map(c=>`<li>${escapeHtml(c.item)}${c.notes ? ' — ' + escapeHtml(c.notes) : ''}</li>`).join('')}</ul>` : ''}
+          ${notesList.length > 0 ? `<div style="font-weight:700; border-top:1px solid #ccc; padding-top:6px; margin:10px 0 5px;">Inspector Notes</div>${notesList.map(n=>`<p style="font-style:italic; color:#444;">"${escapeHtml(n.text)}"</p>`).join('')}` : ''}
+          <div style="margin-top:14px; border-top:2px solid #1a1a1a; padding-top:8px; font-size:10px; color:#555;">Document ID: INS-${new Date().toISOString().slice(0,10)}-${String(s.id).padStart(3,"0")} · Digitally signed.</div>
+        </div>
+        <div class="row" style="margin-top:14px; gap:10px;"><button class="btn-primary" onclick="toast('PDF generated')">Export PDF</button><button class="btn-ghost" onclick="toast('Sent to ADEM portal')">Send to Regulator</button></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Templates</div>
+        <div class="grid-2">
+          <div class="stat" style="cursor:pointer;" onclick="toast('Template loaded')"><div class="label">ADEM SWPPP</div><div style="font-size:13px; margin-top:4px;">Construction Site Inspection</div></div>
+          <div class="stat" style="cursor:pointer;" onclick="toast('Template loaded')"><div class="label">EPA NPDES</div><div style="font-size:13px; margin-top:4px;">CGP Routine</div></div>
+          <div class="stat" style="cursor:pointer;" onclick="toast('Template loaded')"><div class="label">Post-Storm</div><div style="font-size:13px; margin-top:4px;">Rainfall-Triggered</div></div>
+          <div class="stat" style="cursor:pointer;" onclick="toast('Template loaded')"><div class="label">+ Custom</div><div style="font-size:13px; margin-top:4px;">Build your own</div></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ===================== INSIGHTS (Vision AI gated for charts) ===================== */
+function renderInsights(){
+  const el = document.getElementById("insightsContent");
+  const sites = MY_SITES();
+  if (sites.length === 0) {
+    el.innerHTML = `<div class="card"><div class="empty-state"><div class="em-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7a7a7a" stroke-width="1.8"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div><h3>No insights yet</h3><p>Run a few inspections and Insights will start showing your trends.</p><div class="actions"><button class="btn-primary" onclick="openAddSite()">+ Add Your First Site</button></div></div></div>`;
+    return;
+  }
+  const myActive = sites.filter(s=>s.status==="active").length;
+  const totalOpen = sites.reduce((sum,s)=>sum+(s.openIssues||0), 0);
+  const totalCompliant = sites.reduce((sum,s)=>sum+(s.compliance||[]).length, 0);
+  el.innerHTML = `
+    <div class="stat-grid" style="margin-bottom:18px;">
+      <div class="stat"><div class="label">Total Sites</div><div class="value">${sites.length}</div></div>
+      <div class="stat"><div class="label">Active</div><div class="value">${myActive}</div></div>
+      <div class="stat"><div class="label">Open Issues</div><div class="value" style="color:${totalOpen>0?'var(--warn)':'var(--text-1)'};">${totalOpen}</div></div>
+      <div class="stat"><div class="label">Compliant Items</div><div class="value" style="color:var(--good);">${totalCompliant}</div></div>
+    </div>
+    <div class="charts-grid">
+      <div class="card"><div class="card-title">Inspections per week (12 wks)</div><div class="chart-box"><canvas id="weeklyInsp"></canvas></div></div>
+      <div class="card"><div class="card-title">Risk profile across your sites</div><div class="chart-box"><canvas id="devRisk"></canvas></div></div>
+    </div>`;
+  drawAnalytics();
+}
+
+/* ===================== AI MODES PAGE ===================== */
+function renderModes(){
+  const el = document.getElementById("modesContent");
+  const sub = document.getElementById("modesSubhead");
+  const tier = getUserTier();
+  if (isOwner()) {
+    sub.textContent = "As the platform owner, you have full access to all AI modes — included.";
+  } else if (tier === "free") {
+    sub.textContent = "You're on the Free plan. Upgrade to unlock AI features.";
+  } else {
+    sub.textContent = `You're currently on ${TIERS[tier].name}. Upgrade or downgrade anytime.`;
+  }
+
+  const modeButton = (modeKey) => {
+    if (isOwner()) return `<button class="mode-cta" disabled style="cursor:default;background:var(--bg-3);color:var(--text-2);">Owner — Included</button>`;
+    if (tier === modeKey) return `<button class="mode-cta" disabled style="cursor:default;background:var(--good);color:#1a1a1a;border-color:transparent;">✓ Current Plan</button>`;
+    if (TIERS[tier].rank > TIERS[modeKey].rank) return `<button class="mode-cta" onclick="startCheckout('${modeKey}')">Downgrade</button>`;
+    return `<button class="mode-cta" onclick="startCheckout('${modeKey}')">Subscribe · $${TIERS[modeKey].price}/mo</button>`;
+  };
+
+  el.innerHTML = `
+    <div class="modes">
+      <div class="mode-card ${tier==='documentation'?'current':''}">
+        ${tier==='documentation' ? '<span class="badge">CURRENT</span>' : '<span class="pill-soft pill-gray">MODE 1</span>'}
+        <h3 style="margin-top:10px;">Documentation AI</h3>
+        <div style="color:var(--text-3); font-size:13px;">For inspectors who want their evenings back.</div>
+        <div class="price">$9.99<small> / month</small></div>
+        <ul>${TIERS.documentation.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+        ${modeButton('documentation')}
+      </div>
+
+      <div class="mode-card featured ${tier==='vision'?'current':''}">
+        ${tier==='vision' ? '<span class="badge">CURRENT</span>' : '<span class="pill-soft pill-gray">MODE 2 · MOST POPULAR</span>'}
+        <h3 style="margin-top:10px;">Vision AI</h3>
+        <div style="color:var(--text-3); font-size:13px;">A second pair of trained eyes.</div>
+        <div class="price">$14.99<small> / month</small></div>
+        <ul>${TIERS.vision.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+        ${modeButton('vision')}
+      </div>
+
+      <div class="mode-card ${tier==='predictive'?'current':''}">
+        ${tier==='predictive' ? '<span class="badge">CURRENT</span>' : '<span class="pill-soft pill-gray">MODE 3 · ENTERPRISE</span>'}
+        <h3 style="margin-top:10px;">Predictive AI</h3>
+        <div style="color:var(--text-3); font-size:13px;">Reactive → predictive inspections.</div>
+        <div class="price">$29.99<small> / month</small></div>
+        <ul>${TIERS.predictive.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+        ${modeButton('predictive')}
+      </div>
+    </div>
+    ${!isOwner() && tier !== 'free' ? `<div class="card" style="margin-top:18px;"><div class="row"><div><div class="card-title" style="margin:0;">Cancel Subscription</div><div style="font-size:12.5px; color:var(--text-2);">You'll keep access until the end of your billing period.</div></div><div class="grow"></div><button class="btn-ghost" onclick="if(confirm('Cancel your ' + TIERS[getUserTier()].name + ' subscription?')){const u=getCurrentUser();u.subscription={tier:'free',since:Date.now()};persist();enterApp();toast('Subscription canceled');}">Cancel</button></div></div>` : ''}
+  `;
+}
+
+/* ===================== MY ACCOUNT ===================== */
+function renderAccount(){
+  const u = getCurrentUser();
+  if (!u) return;
+  const tier = getUserTier();
+  const T = TIERS[tier];
+  const memberSince = new Date(u.createdAt || Date.now()).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+  const sub = u.subscription || { tier: 'free', since: Date.now() };
+  const subSince = new Date(sub.since || Date.now()).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+  const sites = u.sites || [];
+  const totalIssues = sites.reduce((sum, s) => sum + (s.issues || []).length, 0);
+  const openIssues = sites.reduce((sum, s) => sum + (s.issues || []).filter(i => i.status === 'open').length, 0);
+  const totalNotes = sites.reduce((sum, s) => sum + (s.voiceNotes || []).length, 0);
+  const totalCompliant = sites.reduce((sum, s) => sum + (s.compliance || []).length, 0);
+
+  const isAnnualOwner = isOwner();
+  const nextBillDate = sub.since ? new Date(sub.since + 30*24*60*60*1000).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : "—";
+
+  const el = document.getElementById("accountContent");
+  el.innerHTML = `
+    <div class="acct-header">
+      <div class="acct-avatar">${u.initials}</div>
+      <div style="flex:1;min-width:200px;">
+        <div class="acct-name">${escapeHtml(u.name)} ${isAnnualOwner ? '<span class="owner-badge">OWNER</span>' : ''}</div>
+        <div class="acct-email">${escapeHtml(u.email)}</div>
+        <div class="acct-meta">Member since ${memberSince}</div>
+      </div>
+      <div>
+        <button class="btn-ghost" onclick="toast('Edit profile coming soon')">Edit Profile</button>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Subscription</div>
+        <div class="info-row">
+          <div class="info-label">Current Plan</div>
+          <div class="info-value">${T.name}${isAnnualOwner ? ' <small>(Owner — Free)</small>' : ''}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Price</div>
+          <div class="info-value">${isAnnualOwner ? 'Included' : (T.price === 0 ? 'Free' : '$' + T.price.toFixed(2) + ' / month')}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">${tier==='free' ? 'Free since' : 'Subscribed since'}</div>
+          <div class="info-value">${subSince}</div>
+        </div>
+        ${tier !== 'free' && !isAnnualOwner ? `
+          <div class="info-row">
+            <div class="info-label">Next Billing</div>
+            <div class="info-value">${nextBillDate}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Payment Method</div>
+            <div class="info-value">${sub.card ? `${sub.card.brand} •••• ${sub.card.last4}` : '—'}</div>
+          </div>
+        ` : ''}
+        <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-primary" onclick="showPage('modes')">${tier==='free' ? 'Upgrade' : 'Manage Plan'}</button>
+          ${tier !== 'free' && !isAnnualOwner ? `<button class="btn-ghost" onclick="if(confirm('Cancel your ' + TIERS[getUserTier()].name + ' subscription?')){const u=getCurrentUser();u.subscription={tier:'free',since:Date.now()};persist();renderAccount();enterApp();toast('Subscription canceled');}">Cancel Subscription</button>` : ''}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Account Information</div>
+        <div class="info-row"><div class="info-label">Full Name</div><div class="info-value">${escapeHtml(u.name)}</div></div>
+        <div class="info-row"><div class="info-label">Email</div><div class="info-value">${escapeHtml(u.email)}</div></div>
+        <div class="info-row"><div class="info-label">Account Type</div><div class="info-value">${isAnnualOwner ? 'Platform Owner' : 'Standard User'}</div></div>
+        <div class="info-row"><div class="info-label">Member Since</div><div class="info-value">${memberSince}</div></div>
+        <div class="info-row"><div class="info-label">Account ID</div><div class="info-value" style="font-family:monospace; font-size:12px; color:var(--text-3);">acct_${(u.email || '').split('@')[0].slice(0,12)}</div></div>
+        <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-ghost" onclick="toast('Password reset email sent')">Change Password</button>
+          <button class="btn-ghost" onclick="downloadMyData()">Download My Data</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px;">
+      <div class="card-title">Usage Statistics</div>
+      <div class="stat-grid">
+        <div class="stat"><div class="label">Total Sites</div><div class="value">${sites.length}</div></div>
+        <div class="stat"><div class="label">Open Issues</div><div class="value" style="color:${openIssues>0?'var(--warn)':'var(--text-1)'};">${openIssues}</div></div>
+        <div class="stat"><div class="label">Voice Notes</div><div class="value">${totalNotes}</div></div>
+        <div class="stat"><div class="label">Compliant Items</div><div class="value" style="color:var(--good);">${totalCompliant}</div></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px;border-color:rgba(176,138,130,.30);">
+      <div class="card-title" style="color:var(--bad);">Danger Zone</div>
+      <div class="info-row" style="border:none;padding:8px 0;">
+        <div>
+          <div style="font-weight:600;font-size:14px;">Delete Account</div>
+          <div style="font-size:12.5px;color:var(--text-3);margin-top:2px;">Permanently delete your account and all your data. This cannot be undone.</div>
+        </div>
+        <button class="btn-ghost" style="border-color:rgba(176,138,130,.40);color:var(--bad);" onclick="deleteMyAccount()">Delete Account</button>
+      </div>
+    </div>
+  `;
+}
+
+function downloadMyData(){
+  const u = getCurrentUser();
+  if (!u) return;
+  const dataStr = JSON.stringify(u, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `inspectra-${u.email}-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("Your data has been downloaded");
+}
+
+function deleteMyAccount(){
+  if (!confirm("Are you absolutely sure? This will delete your account and ALL your sites, inspections, photos, and notes permanently.")) return;
+  if (!confirm("Last chance — type your email to confirm: " + currentUserEmail)) return;
+  delete users[currentUserEmail];
+  saveUsers();
+  currentUserEmail = null;
+  saveCurrent();
+  document.getElementById("app").style.display = "none";
+  document.getElementById("authScreen").classList.add("show");
+  switchAuthTab("signup");
+  toast("Account deleted");
+}
+
+/* ===================== HELP & SUPPORT ===================== */
+const FAQS = [
+  {
+    q: "What is Inspectra AI and who is it for?",
+    a: "Inspectra AI is a credentialed inspector platform built for site inspectors (like ADEM QCIs), engineering firms, developers, and admin/regulators. It helps you log inspections, track BMPs, manage SWPPP compliance, and generate ADEM-formatted reports — with optional AI assistance for documentation, photo analysis, and predictive risk scoring."
+  },
+  {
+    q: "How do I add my first construction site?",
+    a: "Click the <strong>+ Add Site</strong> button in the top-right of any page (or the same button on the Home/My Sites empty states). Fill in the site name, permit number, status, and either an address or GPS coordinates. We'll auto-geocode addresses for you using OpenStreetMap. Your site will then show up on the map, in My Sites, and in Field Mode."
+  },
+  {
+    q: "What's the difference between Documentation AI, Vision AI, and Predictive AI?",
+    a: "<strong>Documentation AI ($9.99/mo)</strong> auto-generates inspection reports, transcribes voice notes into SWPPP-compliant language, and exports to PDF. <strong>Vision AI ($14.99/mo)</strong> adds photo analysis — automatically detecting broken silt fences, sediment runoff, erosion rills, and clogged inlets. <strong>Predictive AI ($29.99/mo)</strong> includes everything above plus the Risk Engine, which combines weather, terrain, and inspection history to predict which sites are likely to fail their next inspection."
+  },
+  {
+    q: "Can I use Inspectra AI offline in the field?",
+    a: "Yes. Field Mode is designed for poor-signal job sites. Photos, voice notes, issues, and compliance entries you log offline are saved locally on your device and automatically sync the moment you're back online. You'll see a connectivity indicator at the bottom of Field Mode."
+  },
+  {
+    q: "How does storm-triggered inspection flagging work?",
+    a: "Inspectra AI continuously monitors rainfall data for the regions where your sites are located. When rainfall exceeds your SWPPP threshold (typically 0.5\" in 24 hours, or multi-day storm totals), all active sites in the affected area are automatically flagged for post-storm inspection within 24 hours, per ADEM requirements. You'll see flagged sites on the Storm Watch page."
+  },
+  {
+    q: "Is my data secure and private?",
+    a: "Each user account is fully isolated — you can only see your own sites, inspections, and reports. Your data is stored locally in your browser by default. For real-world deployment, we recommend enabling cloud sync with end-to-end encryption (contact us about our enterprise plan)."
+  },
+  {
+    q: "How do I cancel or change my subscription?",
+    a: "Go to <strong>AI Modes</strong> from the sidebar (or click your account name in the bottom-left and select <strong>Manage Subscription</strong>). You can upgrade, downgrade, or cancel at any time. If you cancel, you'll keep access through the end of your current billing period."
+  },
+  {
+    q: "Can I export my inspection reports?",
+    a: "Yes — once you have Documentation AI or higher. From the <strong>Reports</strong> page, click <strong>Export PDF</strong> on any report. Reports are auto-formatted to match ADEM SWPPP, EPA NPDES CGP, and other regulatory standards. You can also send reports directly to a regulator or email them to your contractor of record."
+  },
+  {
+    q: "Does Inspectra AI comply with ADEM SWPPP requirements?",
+    a: "Yes. The platform's note-coverage tracker reminds you to document everything ADEM requires: BMP location, BMP condition, corrective action, deadline, responsible party, rainfall data, GPS coordinates, photo evidence, and inspector signature. Reports cite ADEM Admin. Code r. 335-6-12-.13 and SWPPP sections automatically."
+  },
+  {
+    q: "What devices does Inspectra AI work on?",
+    a: "Any modern web browser on phone, tablet, or computer — Chrome, Safari, Firefox, Edge. Field Mode is fully responsive and works great on phones in the field. No app install required."
+  },
+  {
+    q: "How accurate is the AI risk scoring?",
+    a: "The Risk Engine uses a weighted six-factor model: rainfall (25%), slope/terrain (15%), soil erosion factor (10%), waterway proximity (15%), past violations (20%), and BMP condition history (15%). Scores from 1–100 indicate likelihood of inspection failure. Try the sliders on the Risk Engine page to see how each factor affects the score."
+  },
+  {
+    q: "Can I share access with my team or company?",
+    a: "Each team member can create their own account with their own email. For engineering firms managing multiple projects, our enterprise tier includes multi-user dashboards and centralized admin controls. Email us for details."
+  },
+  {
+    q: "What happens to my data if I cancel my subscription?",
+    a: "All your sites, photos, notes, and inspection history stay in your account — even after canceling. You'll lose access to AI features (auto-reports, photo analysis, risk scoring), but your manual records remain accessible. You can export everything as JSON anytime from <strong>My Account → Download My Data</strong>."
+  },
+  {
+    q: "How do I report a bug or request a new feature?",
+    a: "Email us at <strong>inspectraai.1@gmail.com</strong> with as much detail as possible — what you were doing, what happened, and any screenshots if relevant. We read every message and reply within 1–2 business days."
+  },
+];
+
+function renderHelp(){
+  const el = document.getElementById("helpContent");
+  el.innerHTML = `
+    <div class="help-contact">
+      <div class="help-contact-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f1f1f1" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <div class="help-contact-text">
+        <h3>Get in touch</h3>
+        <p>Have a question, feedback, or need help with something specific? We typically reply within 1–2 business days.</p>
+        <a href="mailto:inspectraai.1@gmail.com?subject=Inspectra AI Support" class="help-contact-email">inspectraai.1@gmail.com</a>
+      </div>
+      <div>
+        <button class="btn-primary" onclick="window.location.href='mailto:inspectraai.1@gmail.com?subject=Inspectra AI Support'">Email Us</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-title">Frequently Asked Questions</div>
+      <div style="margin-top:8px;">
+        ${FAQS.map((f, i) => `
+          <div class="faq-item" id="faq-item-${i}">
+            <div class="faq-q" onclick="toggleFaq(${i})">
+              <span>${escapeHtml(f.q)}</span>
+              <svg class="faq-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-a">${f.a}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Other Ways to Get Help</div>
+      <div class="grid-3" style="margin-top:8px;">
+        <div class="stat" style="cursor:pointer;" onclick="window.location.href='mailto:inspectraai.1@gmail.com?subject=Bug Report'">
+          <div class="label">Report a Bug</div>
+          <div style="font-size:13px; margin-top:4px;">Email our team</div>
+        </div>
+        <div class="stat" style="cursor:pointer;" onclick="window.location.href='mailto:inspectraai.1@gmail.com?subject=Feature Request'">
+          <div class="label">Feature Request</div>
+          <div style="font-size:13px; margin-top:4px;">Suggest improvements</div>
+        </div>
+        <div class="stat" style="cursor:pointer;" onclick="window.location.href='mailto:inspectraai.1@gmail.com?subject=Enterprise Inquiry'">
+          <div class="label">Enterprise</div>
+          <div style="font-size:13px; margin-top:4px;">Multi-firm pricing</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleFaq(i){
+  const item = document.getElementById(`faq-item-${i}`);
+  if (item) item.classList.toggle("open");
+}
+
+/* ===================== DRAWER ===================== */
+function openSite(id){
+  const s = MY_SITES().find(x=>x.id===id); if(!s) return;
+  document.getElementById("dr_name").textContent = s.name;
+  document.getElementById("dr_meta").textContent = `${s.permit||"No permit"} · ${s.address || `${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}`} · ${s.county||"—"} County`;
+  const r = document.getElementById("dr_risk");
+  r.textContent = s.risk; r.style.color = riskColor(s.risk);
+  document.getElementById("dr_open").textContent = (s.issues||[]).filter(i=>i.status==='open').length;
+  document.getElementById("dr_count").textContent = s.lastInsp ? "1+" : "0";
+  document.getElementById("dr_permit").textContent = s.permit||"—";
+  document.getElementById("dr_status").innerHTML = `<span class="status-pill status-${s.status}">${statusLabel(s.status)}</span>`;
+  document.getElementById("dr_address").textContent = s.address || `${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}`;
+  document.getElementById("dr_dev").textContent = s.dev||"—";
+  document.getElementById("dr_acres").textContent = s.acres ? s.acres + " ac" : "—";
+
+  const allEvents = [
+    ...(s.voiceNotes||[]).map(n=>({ts:n.id, type:'note', text:n.text, time:n.timestamp})),
+    ...(s.issues||[]).map(i=>({ts:i.id, type:'issue', text:i.title, time:i.timestamp, severity:i.severity, status:i.status})),
+    ...(s.compliance||[]).map(c=>({ts:c.id, type:'compliant', text:c.item, time:c.timestamp})),
+  ].sort((a,b)=>b.ts-a.ts);
+
+  if (allEvents.length === 0) document.getElementById("dr_timeline").innerHTML = `<div class="empty-state" style="padding:20px;"><p style="margin:0;">No inspection history yet.</p></div>`;
+  else document.getElementById("dr_timeline").innerHTML = allEvents.map(e=>{
+    const cls = e.type==='issue' ? (e.severity==='high'?'bad':'warn') : '';
+    const what = e.type==='note' ? '🎙️ Voice note recorded' : e.type==='issue' ? `⚠ Issue: ${escapeHtml(e.text)}` : `✓ ${escapeHtml(e.text)} marked compliant`;
+    return `<div class="tl-item ${cls}"><div class="when">${e.time}</div><div class="what">${what}</div>${e.type==='note'?`<div class="body">${escapeHtml(e.text)}</div>`:''}</div>`;
+  }).join("");
+
+  document.getElementById("dr_notes").innerHTML = renderVoiceNotesList(s);
+  document.getElementById("dr_issues").innerHTML = renderIssuesList(s);
+  document.getElementById("dr_compliance").innerHTML = renderComplianceList(s);
+  document.getElementById("drawer").classList.add("show");
+  document.getElementById("drawerMask").classList.add("show");
+}
+function closeDrawer(){ document.getElementById("drawer").classList.remove("show"); document.getElementById("drawerMask").classList.remove("show"); }
+document.querySelectorAll(".tab").forEach(t=>{
+  t.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    document.querySelectorAll(".tab-content").forEach(c=>c.style.display="none");
+    document.getElementById("tc-"+t.dataset.tab).style.display="block";
+  });
+});
+
+/* ===================== ADD SITE ===================== */
+let locMode = "address";
+function setLocMode(mode){
+  locMode = mode;
+  document.querySelectorAll("#locSeg button").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll("#locSeg button")[mode==="address"?0:1].classList.add("active");
+  document.getElementById("locAddress").style.display = mode==="address" ? "" : "none";
+  document.getElementById("locCoords").style.display = mode==="coords" ? "" : "none";
+}
+function openAddSite(){
+  if (!getCurrentUser()) return;
+  document.getElementById("addSiteForm").reset();
+  setLocMode("address");
+  document.getElementById("addSiteMask").classList.add("show");
+}
+function closeAddSite(){ document.getElementById("addSiteMask").classList.remove("show"); }
+async function geocodeAddress(addr){
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}&limit=1`, { headers: { "Accept-Language": "en" } });
+    const j = await res.json();
+    if (j && j.length > 0) return { lat: parseFloat(j[0].lat), lng: parseFloat(j[0].lon) };
+  } catch(e) {}
+  return null;
+}
+async function submitNewSite(e){
+  e.preventDefault();
+  const u = getCurrentUser();
+  if (!u) return false;
+  const f = e.target;
+  const data = Object.fromEntries(new FormData(f));
+  const submitBtn = document.getElementById("addSiteSubmit");
+  let lat, lng, address = "";
+  if (locMode === "address") {
+    if (!data.address || !data.address.trim()) { toast("Please enter an address or switch to Coordinates"); return false; }
+    address = data.address.trim();
+    submitBtn.disabled = true; submitBtn.textContent = "Looking up...";
+    const geo = await geocodeAddress(address);
+    submitBtn.disabled = false; submitBtn.textContent = "Add Site";
+    if (!geo) { toast("Couldn't find that address — try Coordinates instead"); return false; }
+    lat = geo.lat; lng = geo.lng;
+  } else {
+    lat = parseFloat(data.lat); lng = parseFloat(data.lng);
+    if (isNaN(lat) || isNaN(lng)) { toast("Please enter valid coordinates"); return false; }
+  }
+  const baseRisk = Math.min(100, Math.max(20, Math.round(35 + Math.random()*30)));
+  u.sites.push({
+    id: nextSiteId(), name: data.name, permit: data.permit || "",
+    lat, lng, address, county: data.county || "", status: data.status || "active",
+    risk: baseRisk, dev: data.dev || "", acres: parseFloat(data.acres) || 0,
+    soil: "", water: "", rain: "", lastInsp: "", openIssues: 0, trigger: "Routine",
+    voiceNotes: [], issues: [], compliance: []
+  });
+  persist();
+  closeAddSite();
+  toast(`Added "${data.name}"`);
+  refreshAll();
+  return false;
+}
+
+/* ===================== VOICE NOTE ===================== */
+const VOICE_SAMPLES = [
+  "Silt fence at northeast corner shows a tear approximately 18 inches; located downhill of the stockpile. Sediment accumulation visible. Recommend immediate repair within 24 hours per SWPPP.",
+  "Inlet protection at southwest entrance is displaced. Sandbag wattle has shifted, creating a partial bypass. Re-secure within 48 hours.",
+  "Construction entrance shows track-out onto adjacent roadway. Replenish stone base and sweep affected area same day.",
+  "Sediment basin currently at approximately 75 percent capacity. Pump-down recommended within the next 7 days.",
+  "All BMPs inspected and in compliance. No corrective actions required at this time.",
+];
+let voiceTimer = null;
+function openVoiceNote(){
+  const s = getActiveFieldSite();
+  if (!s) { toast("Add a site first"); return; }
+  document.getElementById("voiceText").value = "";
+  document.getElementById("voiceSiteName").textContent = s.name;
+  document.getElementById("voiceSub").textContent = hasAccess('documentation') ? "Speak naturally — we'll convert to SWPPP-formatted notes." : "Type your note. AI transcription requires Documentation AI ($9.99/mo).";
+  document.getElementById("voiceMask").classList.add("show");
+  if (hasAccess('documentation')) {
+    const sample = VOICE_SAMPLES[Math.floor(Math.random() * VOICE_SAMPLES.length)];
+    if (voiceTimer) clearInterval(voiceTimer);
+    let i = 0;
+    voiceTimer = setInterval(()=>{
+      i += 4;
+      document.getElementById("voiceText").value = sample.slice(0, i);
+      if (i >= sample.length) { clearInterval(voiceTimer); voiceTimer = null; document.getElementById("voiceSub").textContent = "Transcription complete. Edit if needed, then save."; }
+    }, 60);
+  }
+}
+function closeVoiceNote(){ if (voiceTimer) { clearInterval(voiceTimer); voiceTimer = null; } document.getElementById("voiceMask").classList.remove("show"); }
+function saveVoiceNote(){
+  const s = getActiveFieldSite();
+  if (!s) return;
+  const text = document.getElementById("voiceText").value.trim();
+  if (!text) { toast("Note is empty"); return; }
+  if (!s.voiceNotes) s.voiceNotes = [];
+  s.voiceNotes.unshift({ id: nextLogId(), text, timestamp: nowStr() });
+  persist();
+  closeVoiceNote();
+  toast("Voice note saved");
+  refreshAll();
+}
+function deleteVoiceNote(id){
+  MY_SITES().forEach(s=>{ if (s.voiceNotes) s.voiceNotes = s.voiceNotes.filter(n=>n.id!==id); });
+  persist(); refreshAll(); toast("Voice note deleted");
+}
+
+/* ===================== ISSUE ===================== */
+function openLogIssue(){
+  const s = getActiveFieldSite();
+  if (!s) { toast("Add a site first"); return; }
+  document.getElementById("issueForm").reset();
+  document.getElementById("issueSeverity").value = "med";
+  document.getElementById("issueSiteName").textContent = s.name;
+  document.getElementById("issueMask").classList.add("show");
+}
+function closeLogIssue(){ document.getElementById("issueMask").classList.remove("show"); }
+function saveIssue(e){
+  e.preventDefault();
+  const s = getActiveFieldSite();
+  if (!s) return false;
+  const title = document.getElementById("issueTitle").value.trim();
+  if (!title) return false;
+  if (!s.issues) s.issues = [];
+  s.issues.unshift({
+    id: nextLogId(), title,
+    description: document.getElementById("issueDesc").value.trim(),
+    severity: document.getElementById("issueSeverity").value,
+    bmp: document.getElementById("issueBmp").value,
+    status: "open", timestamp: nowStr()
+  });
+  s.openIssues = (s.issues || []).filter(i=>i.status==='open').length;
+  persist(); closeLogIssue(); toast("Issue logged"); refreshAll();
+  return false;
+}
+function resolveIssue(id){
+  MY_SITES().forEach(s=>{ if (!s.issues) return; const i = s.issues.find(x=>x.id===id); if (i) i.status="resolved"; s.openIssues = (s.issues || []).filter(x=>x.status==='open').length; });
+  persist(); refreshAll(); toast("Issue resolved");
+}
+function reopenIssue(id){
+  MY_SITES().forEach(s=>{ if (!s.issues) return; const i = s.issues.find(x=>x.id===id); if (i) i.status="open"; s.openIssues = (s.issues || []).filter(x=>x.status==='open').length; });
+  persist(); refreshAll(); toast("Issue reopened");
+}
+function deleteIssue(id){
+  MY_SITES().forEach(s=>{ if (!s.issues) return; s.issues = s.issues.filter(x=>x.id!==id); s.openIssues = (s.issues || []).filter(x=>x.status==='open').length; });
+  persist(); refreshAll(); toast("Issue deleted");
+}
+
+/* ===================== COMPLIANT ===================== */
+function openMarkCompliant(){
+  const s = getActiveFieldSite();
+  if (!s) { toast("Add a site first"); return; }
+  document.getElementById("compliantForm").reset();
+  document.getElementById("compliantSiteName").textContent = s.name;
+  document.getElementById("compliantMask").classList.add("show");
+}
+function closeMarkCompliant(){ document.getElementById("compliantMask").classList.remove("show"); }
+function saveCompliant(e){
+  e.preventDefault();
+  const s = getActiveFieldSite();
+  if (!s) return false;
+  if (!s.compliance) s.compliance = [];
+  s.compliance.unshift({
+    id: nextLogId(),
+    item: document.getElementById("compliantItem").value,
+    notes: document.getElementById("compliantNotes").value.trim(),
+    timestamp: nowStr()
+  });
+  persist(); closeMarkCompliant(); toast("Marked compliant"); refreshAll();
+  return false;
+}
+function deleteCompliance(id){
+  MY_SITES().forEach(s=>{ if (s.compliance) s.compliance = s.compliance.filter(c=>c.id!==id); });
+  persist(); refreshAll(); toast("Compliance entry deleted");
+}
+
+/* ===================== PAYMENT ===================== */
+function startCheckout(tier){
+  if (isOwner()) { toast("You're the owner — all features are included"); return; }
+  pendingTier = tier;
+  const T = TIERS[tier];
+  document.getElementById("payTitle").textContent = `Subscribe to ${T.name}`;
+  document.getElementById("paySummaryName").textContent = T.name;
+  document.getElementById("paySummaryPrice").textContent = T.price.toFixed(2);
+  document.getElementById("paySummaryFeatures").innerHTML = T.features.slice(0,4).map(f=>`<li>${f}</li>`).join('');
+  document.getElementById("payAmount").textContent = T.price.toFixed(2);
+  document.getElementById("payEmail").value = currentUserEmail || "";
+  document.getElementById("payCard").value = "";
+  document.getElementById("payExp").value = "";
+  document.getElementById("payCvc").value = "";
+  document.getElementById("payName").value = "";
+  document.getElementById("payStageForm").style.display = "";
+  document.getElementById("payStageProcessing").style.display = "none";
+  document.getElementById("payStageSuccess").style.display = "none";
+  document.getElementById("payFoot").style.display = "";
+  document.getElementById("payMask").classList.add("show");
+}
+function closePayment(){ document.getElementById("payMask").classList.remove("show"); pendingTier = null; }
+
+// Format card number with spaces
+document.getElementById("payCard").addEventListener("input", e=>{
+  let v = e.target.value.replace(/\s/g,'').replace(/[^0-9]/g, '');
+  v = v.replace(/(\d{4})(?=\d)/g, '$1 ');
+  e.target.value = v.slice(0,19);
+  // Detect brand
+  const num = v.replace(/\s/g,'');
+  let brand = "CARD";
+  if (/^4/.test(num)) brand = "VISA";
+  else if (/^5[1-5]/.test(num) || /^2[2-7]/.test(num)) brand = "MASTERCARD";
+  else if (/^3[47]/.test(num)) brand = "AMEX";
+  else if (/^6/.test(num)) brand = "DISCOVER";
+  document.getElementById("payCardBrand").textContent = brand;
+});
+// Format expiration MM/YY
+document.getElementById("payExp").addEventListener("input", e=>{
+  let v = e.target.value.replace(/[^0-9]/g, '');
+  if (v.length >= 2) v = v.slice(0,2) + (v.length > 2 ? ' / ' + v.slice(2,4) : '');
+  e.target.value = v;
+});
+// CVC numbers only
+document.getElementById("payCvc").addEventListener("input", e=>{
+  e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0,4);
+});
+
+function luhnCheck(num){
+  num = num.replace(/\s/g,'');
+  if (!/^\d{13,19}$/.test(num)) return false;
+  let sum = 0, alt = false;
+  for (let i = num.length - 1; i >= 0; i--) {
+    let n = parseInt(num.charAt(i), 10);
+    if (alt) { n *= 2; if (n > 9) n -= 9; }
+    sum += n; alt = !alt;
+  }
+  return sum % 10 === 0;
+}
+
+function processPayment(e){
+  e.preventDefault();
+  const card = document.getElementById("payCard").value.replace(/\s/g,'');
+  const exp = document.getElementById("payExp").value;
+  const cvc = document.getElementById("payCvc").value;
+  const name = document.getElementById("payName").value.trim();
+  const email = document.getElementById("payEmail").value.trim();
+
+  // Validation
+  if (!luhnCheck(card)) { toast("Invalid card number"); document.getElementById("payCard").classList.add("error"); return false; }
+  document.getElementById("payCard").classList.remove("error");
+  const expMatch = /^(\d{2})\s*\/\s*(\d{2})$/.exec(exp);
+  if (!expMatch) { toast("Invalid expiration date — use MM/YY"); document.getElementById("payExp").classList.add("error"); return false; }
+  const month = parseInt(expMatch[1], 10), year = 2000 + parseInt(expMatch[2], 10);
+  if (month < 1 || month > 12) { toast("Invalid month"); document.getElementById("payExp").classList.add("error"); return false; }
+  const now = new Date();
+  if (year < now.getFullYear() || (year === now.getFullYear() && month <= now.getMonth())) { toast("Card has expired"); document.getElementById("payExp").classList.add("error"); return false; }
+  document.getElementById("payExp").classList.remove("error");
+  if (!/^\d{3,4}$/.test(cvc)) { toast("Invalid CVC"); return false; }
+  if (!name) { toast("Cardholder name required"); return false; }
+  if (!email) { toast("Email required"); return false; }
+
+  // Show processing
+  document.getElementById("payStageForm").style.display = "none";
+  document.getElementById("payStageProcessing").style.display = "";
+  document.getElementById("payFoot").style.display = "none";
+
+  // Simulate processing delay
+  setTimeout(()=>{
+    // Activate subscription
+    const u = getCurrentUser();
+    u.subscription = { tier: pendingTier, since: Date.now(), card: { last4: card.slice(-4), brand: document.getElementById("payCardBrand").textContent } };
+    persist();
+    // Show success
+    document.getElementById("payStageProcessing").style.display = "none";
+    document.getElementById("payStageSuccess").style.display = "";
+    document.getElementById("paySuccessTitle").textContent = `${TIERS[pendingTier].name} activated!`;
+    document.getElementById("paySuccessMsg").textContent = `Your card ending in ${card.slice(-4)} has been charged $${TIERS[pendingTier].price}. Your features are unlocked immediately.`;
+    document.getElementById("payFoot").style.display = "";
+    document.getElementById("payFoot").innerHTML = `<button class="btn-primary" onclick="closePayment(); enterApp();">Done</button>`;
+    toast(`${TIERS[pendingTier].name} activated`);
+  }, 1800);
+  return false;
+}
+
+/* ===================== CHARTS ===================== */
+let trendChart, riskPie, rainSpark, rain30, weeklyInsp, devRisk;
+const CHART_COLORS = { good:"#9ba8a0", warn:"#b0a386", bad:"#b08a82", info:"#94a0ad", plum:"#a89aa5", accent:"#d4d4d4", text:"#b5b5b5", grid:"#2a2a2a" };
+function chartOpts(showLegend){
+  return { responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:showLegend, position:"top", labels:{ color: CHART_COLORS.text, boxWidth:12, font:{family:"inherit"} } } },
+    scales:{ x:{ ticks:{ color: CHART_COLORS.text, font:{family:"inherit"} }, grid:{ color: CHART_COLORS.grid } }, y:{ ticks:{ color: CHART_COLORS.text, font:{family:"inherit"} }, grid:{ color: CHART_COLORS.grid } } } };
+}
+function drawRainSpark(){
+  const el = document.getElementById("rainSpark");
+  if (!el) return;
+  if (rainSpark) rainSpark.destroy();
+  rainSpark = new Chart(el, {
+    type:"bar",
+    data:{ labels:["M","T","W","T","F","S","S"], datasets:[{ data:[0.1,0.0,0.3,0.0,0.4,1.7,0.6], backgroundColor:(c)=>{ const v=c.raw; return v>0.5?CHART_COLORS.bad:v>0.2?CHART_COLORS.warn:CHART_COLORS.good; } }]},
+    options:{ plugins:{legend:{display:false}}, scales:{ x:{ ticks:{color: CHART_COLORS.text}, grid:{display:false} }, y:{ ticks:{color: CHART_COLORS.text}, grid:{color: CHART_COLORS.grid} } } }
+  });
+}
+function drawHero(){
+  const ctx = document.getElementById("trendChart");
+  if (!ctx) return;
+  if (trendChart) trendChart.destroy();
+  trendChart = new Chart(ctx, {
+    type: "line",
+    data: { labels: Array.from({length:12},(_,i)=>`W${i+1}`),
+      datasets: [
+        { label:"Inspections", data:[2,3,4,3,5,4,6,7,5,8,7,9], borderColor: CHART_COLORS.accent, backgroundColor:"rgba(212,212,212,.10)", tension:.35, fill:true, pointRadius:3 },
+        { label:"Issues Resolved", data:[1,2,2,1,3,3,4,4,3,5,5,6], borderColor: CHART_COLORS.plum, backgroundColor:"rgba(168,154,165,.10)", tension:.35, fill:true, pointRadius:3 },
+      ] }, options: chartOpts(true)
+  });
+  const ctx2 = document.getElementById("riskPie");
+  if (!ctx2) return;
+  if (riskPie) riskPie.destroy();
+  const sites = MY_SITES();
+  const lows = sites.filter(s=>riskBucket(s.risk)==="low").length;
+  const meds = sites.filter(s=>riskBucket(s.risk)==="med").length;
+  const his  = sites.filter(s=>riskBucket(s.risk)==="high").length;
+  riskPie = new Chart(ctx2, {
+    type:"doughnut",
+    data:{ labels:["Looking good","Worth a look","Needs attention"], datasets:[{ data:[lows,meds,his], backgroundColor:[CHART_COLORS.good, CHART_COLORS.warn, CHART_COLORS.bad], borderWidth:0 }] },
+    options:{ plugins:{ legend:{ position:"bottom", labels:{ color: CHART_COLORS.text, font:{family:"inherit"} } } }, cutout:"65%" }
+  });
+}
+function drawRain30(){
+  const labels = Array.from({length:30},(_,i)=>`${i+1}`);
+  const data = labels.map((_,i)=>{ if (i===26) return 1.7; if (i>=20 && i<=22) return [0.7,1.1,0.6][i-20]; if (i===4) return 1.1; const r = Math.random(); return r<0.4 ? 0 : r*0.4; });
+  const ctx = document.getElementById("rain30");
+  if (!ctx) return;
+  if (rain30) rain30.destroy();
+  rain30 = new Chart(ctx, {
+    type:"bar",
+    data:{ labels, datasets:[
+      { label:"Daily rainfall (in)", data, backgroundColor: data.map(v=> v>=0.5 ? CHART_COLORS.bad : v>=0.25 ? CHART_COLORS.warn : CHART_COLORS.good) },
+      { type:"line", label:"0.5\" trigger", data: labels.map(()=>0.5), borderColor: CHART_COLORS.text, borderDash:[4,4], pointRadius:0, borderWidth:1.5 }
+    ]}, options: chartOpts(true)
+  });
+  window._rain30Init = true;
+}
+function drawAnalytics(){
+  const ctx = document.getElementById("weeklyInsp");
+  if (!ctx) return;
+  if (weeklyInsp) weeklyInsp.destroy();
+  const baseSize = MY_SITES().length;
+  weeklyInsp = new Chart(ctx, {
+    type:"bar",
+    data:{ labels: Array.from({length:12},(_,i)=>`W${i+1}`),
+      datasets:[
+        { label:"Routine", data: Array.from({length:12},()=>Math.floor(Math.random()*baseSize)+1), backgroundColor: CHART_COLORS.info },
+        { label:"Storm-triggered", data: Array.from({length:12},()=>Math.floor(Math.random()*3)), backgroundColor: CHART_COLORS.bad },
+      ]
+    }, options: { ...chartOpts(true), scales: { x:{stacked:true, ticks:{color: CHART_COLORS.text}, grid:{display:false}}, y:{stacked:true, ticks:{color: CHART_COLORS.text}, grid:{color: CHART_COLORS.grid}} } }
+  });
+  const ctx2 = document.getElementById("devRisk");
+  if (!ctx2) return;
+  if (devRisk) devRisk.destroy();
+  const sites = MY_SITES();
+  const rainfall = sites.length ? sites.reduce((s,x)=>s+x.risk*0.6, 0)/sites.length : 0;
+  devRisk = new Chart(ctx2, {
+    type:"radar",
+    data:{ labels:["Rainfall","Slope","Soil","Waterway","Violations","BMP"],
+      datasets:[{ label:"Your portfolio", data:[rainfall, 50, 45, 40, 30, 70], borderColor: CHART_COLORS.accent, backgroundColor:"rgba(212,212,212,.15)" }]
+    },
+    options: { plugins:{ legend:{ labels:{ color: CHART_COLORS.text } } }, scales:{ r:{ angleLines:{color: CHART_COLORS.grid}, grid:{color: CHART_COLORS.grid}, pointLabels:{color: CHART_COLORS.text}, ticks:{display:false}, suggestedMin:0, suggestedMax:100 } } }
+  });
+}
+
+/* ===================== SAMPLE DATA (OWNER ONLY) ===================== */
+function loadSampleData(){
+  if (!isOwner()) { toast("Sample data is owner-only"); return; }
+  const u = getCurrentUser();
+  const SAMPLE = [
+    { name:"Eastview Towers · Phase 2", permit:"SWPPP-2025-0481", lat:33.5191, lng:-86.7825, address:"1801 Hwy 280, Birmingham, AL", county:"Jefferson", status:"active", risk:78, dev:"Sumner Civil Group", acres:18.4, lastInsp:"Apr 27, 2026", openIssues:0, trigger:"Post-storm > 0.5\"" },
+    { name:"Cahaba Ridge Subdivision", permit:"SWPPP-2025-0312", lat:33.4674, lng:-86.7110, address:"4500 Cahaba Beach Rd, Birmingham, AL", county:"Shelby", status:"active", risk:62, dev:"Cahaba Ridge Co.", acres:42.1, lastInsp:"Apr 27, 2026", openIssues:0, trigger:"Post-storm > 0.5\"" },
+    { name:"Northwood Residential", permit:"SWPPP-2025-0750", lat:33.6291, lng:-86.7402, address:"7200 Northwood Pkwy, Gardendale, AL", county:"Jefferson", status:"active", risk:34, dev:"Sumner Civil Group", acres:9.2, lastInsp:"Apr 26, 2026", openIssues:0, trigger:"Routine" },
+  ];
+  SAMPLE.forEach(s => u.sites.push({ ...s, id: nextSiteId(), voiceNotes:[], issues:[], compliance:[] }));
+  persist();
+  toast("Loaded 3 sample sites");
+  refreshAll();
+}
+
+/* ===================== UTILITIES ===================== */
+function toast(msg){
+  const t = document.createElement("div");
+  t.className = "toast"; t.innerHTML = msg;
+  document.getElementById("toastArea").appendChild(t);
+  setTimeout(()=>t.remove(), 3500);
+}
+function refreshAll(){
+  if (!getCurrentUser()) return;
+  generateNotifications();
+  renderDashboard();
+  renderSites();
+  renderField();
+  renderStorm();
+  renderReports();
+  renderInsights();
+  renderModes();
+  if (mapLayer) refreshMapMarkers();
+  if (map2Layer) refreshMap2Markers();
+  updateBellBadge();
+  // owner badge buttons
+  const sampleBtn = document.getElementById("loadSampleBtn");
+  if (sampleBtn) sampleBtn.style.display = isOwner() ? "" : "none";
+}
+
+/* ===================== INIT ===================== */
+window.addEventListener("DOMContentLoaded", ()=>{
+  loadState();
+  if (currentUserEmail && users[currentUserEmail]) {
+    enterApp();
+  } else {
+    document.getElementById("authScreen").classList.add("show");
+    document.getElementById("app").style.display = "none";
+  }
+});
+window.addEventListener("resize", ()=>{ if (map) map.invalidateSize(); if (map2) map2.invalidateSize(); });
+</script>
+</body>
+</html>
