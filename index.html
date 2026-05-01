@@ -457,6 +457,31 @@
   .faq-item.open .faq-a{display:block;animation:faqIn .2s ease;}
   @keyframes faqIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
 
+  /* LEGAL MODAL & CHECKBOX */
+  .legal-modal{max-width:760px;}
+  .legal-content{font-size:13.5px;color:var(--text-2);line-height:1.65;max-height:60vh;overflow-y:auto;padding-right:8px;}
+  .legal-content h2{font-size:18px;color:var(--text-1);margin:24px 0 8px;letter-spacing:-.2px;font-weight:700;}
+  .legal-content h2:first-child{margin-top:0;}
+  .legal-content h3{font-size:14px;color:var(--text-1);margin:18px 0 6px;font-weight:600;}
+  .legal-content p{margin:0 0 12px;}
+  .legal-content strong{color:var(--text-1);}
+  .legal-content em{color:var(--text-1);font-style:normal;font-weight:600;}
+  .legal-content ul{margin:6px 0 12px 0;padding-left:22px;}
+  .legal-content li{margin-bottom:5px;}
+  .legal-content .legal-meta{font-size:11.5px;color:var(--text-3);margin-bottom:18px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
+  .legal-content .legal-warn{background:var(--warn-2);border:1px solid rgba(176,163,134,.30);border-left:3px solid var(--warn);border-radius:8px;padding:12px 14px;margin:14px 0;font-size:12.5px;}
+
+  .signup-agree{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:9px;cursor:pointer;transition:all .12s;}
+  .signup-agree:hover{background:var(--bg-3);border-color:var(--line-2);}
+  .signup-agree.error{border-color:var(--bad);background:var(--bad-2);}
+  .signup-agree input[type=checkbox]{width:18px;height:18px;flex-shrink:0;margin-top:1px;cursor:pointer;accent-color:var(--accent);}
+  .signup-agree-text{font-size:12.5px;color:var(--text-2);line-height:1.5;}
+  .signup-agree-text a{color:var(--text-1);text-decoration:underline;cursor:pointer;font-weight:500;}
+
+  .auth-legal-foot{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);text-align:center;font-size:11.5px;color:var(--text-3);}
+  .auth-legal-foot a{color:var(--text-2);text-decoration:underline;cursor:pointer;margin:0 6px;}
+  .auth-legal-foot a:hover{color:var(--text-1);}
+
   /* AUTH ERRORS */
   .auth-error{background:var(--bad-2);border:1px solid rgba(176,138,130,.30);border-left:3px solid var(--bad);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--bad);margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;animation:authErrIn .2s ease;line-height:1.45;}
   .auth-error svg{flex-shrink:0;margin-top:1px;}
@@ -564,9 +589,18 @@
         <div class="form-group"><label>Full Name</label><input type="text" id="signupName" required placeholder="Jane Smith" /></div>
         <div class="form-group"><label>Email</label><input type="email" id="signupEmail" required placeholder="you@company.com" /></div>
         <div class="form-group"><label>Password</label><input type="password" id="signupPassword" required minlength="6" placeholder="At least 6 characters" /></div>
+        <label class="signup-agree" id="signupAgreeWrap">
+          <input type="checkbox" id="signupAgree" />
+          <span class="signup-agree-text">I have read and agree to the <a onclick="event.preventDefault();event.stopPropagation();openLegal('terms')">Terms of Service</a> and <a onclick="event.preventDefault();event.stopPropagation();openLegal('privacy')">Privacy Policy</a>, including the limitation of liability and AI accuracy disclaimer.</span>
+        </label>
         <button class="btn-primary" type="submit">Create Account</button>
       </form>
       <div class="auth-foot">Already have an account? <a class="auth-link" onclick="switchAuthTab('login')">Sign in</a></div>
+    </div>
+
+    <!-- Legal footer -->
+    <div class="auth-legal-foot">
+      <a onclick="openLegal('terms')">Terms of Service</a>·<a onclick="openLegal('privacy')">Privacy Policy</a>·<a onclick="openLegal('disclaimer')">AI Disclaimer</a>
     </div>
 
     <!-- Import account from another device -->
@@ -1012,6 +1046,17 @@
   </div>
 </div>
 
+<!-- LEGAL MODAL -->
+<div class="modal-mask" id="legalMask" onclick="if(event.target===this) closeLegal()">
+  <div class="modal legal-modal">
+    <div class="modal-head"><h2 id="legalTitle">Terms of Service</h2><button class="modal-close" onclick="closeLegal()">×</button></div>
+    <div class="modal-body">
+      <div class="legal-content" id="legalContent"></div>
+    </div>
+    <div class="modal-foot"><button class="btn-primary" onclick="closeLegal()">Close</button></div>
+  </div>
+</div>
+
 <div class="toast-area" id="toastArea"></div>
 
 <script>
@@ -1102,15 +1147,24 @@ function doSignup(e){
   const nameEl = document.getElementById("signupName");
   const emailEl = document.getElementById("signupEmail");
   const pwdEl = document.getElementById("signupPassword");
+  const agreeEl = document.getElementById("signupAgree");
+  const agreeWrap = document.getElementById("signupAgreeWrap");
   nameEl.classList.remove("field-error");
   emailEl.classList.remove("field-error");
   pwdEl.classList.remove("field-error");
+  agreeWrap.classList.remove("error");
   if (!name) { showAuthError('signup', 'Please enter your full name.'); nameEl.classList.add("field-error"); nameEl.focus(); return false; }
   if (!email) { showAuthError('signup', 'Please enter your email address.'); emailEl.classList.add("field-error"); emailEl.focus(); return false; }
   if (password.length < 6) { showAuthError('signup', 'Password must be at least 6 characters.'); pwdEl.classList.add("field-error"); pwdEl.focus(); return false; }
   if (users[email]) {
     showAuthError('signup', `<strong>Error — email has an account.</strong> An account with <strong>${escapeHtml(email)}</strong> already exists. <a class="auth-link" onclick="prefillLogin('${escapeHtml(email)}')">Sign in instead</a>.`);
     emailEl.classList.add("field-error");
+    return false;
+  }
+  if (!agreeEl.checked) {
+    showAuthError('signup', `<strong>Please agree to the Terms.</strong> You must read and accept the <a class="auth-link" onclick="openLegal('terms')">Terms of Service</a> and <a class="auth-link" onclick="openLegal('privacy')">Privacy Policy</a> before creating an account.`);
+    agreeWrap.classList.add("error");
+    agreeEl.focus();
     return false;
   }
   const initials = name.split(" ").filter(Boolean).slice(0,2).map(s=>s[0].toUpperCase()).join("") || email.slice(0,2).toUpperCase();
@@ -1120,6 +1174,7 @@ function doSignup(e){
     isOwner: isOwnerSignup,
     subscription: { tier: isOwnerSignup ? "predictive" : "free", since: Date.now() },
     sites: [], nextSiteId: 1, nextLogId: 1, createdAt: Date.now(),
+    agreedToTerms: { agreed: true, at: Date.now(), version: "1.0" },
   };
   saveUsers();
   currentUserEmail = email;
@@ -1194,6 +1249,236 @@ function prefillSignup(email){
   switchAuthTab('signup');
   document.getElementById('signupEmail').value = email;
   document.getElementById('signupName').focus();
+}
+
+/* ===================== LEGAL DOCUMENTS ===================== */
+const LEGAL_DOCS = {
+  terms: {
+    title: "Terms of Service",
+    html: `
+      <div class="legal-meta">Effective &amp; Last Updated: ${new Date().toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'})}</div>
+
+      <div class="legal-warn"><strong>Please read carefully.</strong> By creating an account or using Inspectra AI, you agree to these Terms of Service, including the limitation of liability in Section 10 and the AI accuracy disclaimer in Section 5.</div>
+
+      <h2>1. Acceptance of Terms</h2>
+      <p>By accessing or using Inspectra AI (the "Service," "we," "us," or "our"), operated by Inspectra AI ("Company"), you ("User," "you," or "your") agree to be bound by these Terms of Service ("Terms"). If you do not agree to all of these Terms, you must not access or use the Service. By creating an account, checking the agreement box during signup, or otherwise using the Service, you affirm that you are at least 18 years old and have the legal capacity to enter into this agreement on behalf of yourself or any entity you represent.</p>
+
+      <h2>2. Description of Service</h2>
+      <p>Inspectra AI is a software-as-a-service platform designed to assist qualified credentialed inspectors, engineering firms, developers, and regulatory administrators in managing construction site inspections, documenting Best Management Practices (BMPs), tracking Stormwater Pollution Prevention Plan (SWPPP) compliance, and generating ADEM-formatted inspection reports. The Service includes optional AI-powered features including auto-generated reports (Documentation AI), photo analysis (Vision AI), and predictive risk scoring (Predictive AI), available through paid subscription tiers.</p>
+
+      <h2>3. User Accounts</h2>
+      <p>To access most features of the Service, you must create an account by providing accurate and complete information. You are solely responsible for safeguarding your password and for all activities that occur under your account. You agree to notify us immediately at inspectraai.1@gmail.com of any unauthorized use of your account. We reserve the right to refuse service, terminate accounts, or remove content at our sole discretion. You may not impersonate any person or entity, falsely state your affiliation, or use another user's account without permission. One person or legal entity may not maintain more than one free account.</p>
+
+      <h2>4. Subscription Plans, Payments, and Refunds</h2>
+      <p>The Service offers a free tier and three paid subscription tiers: Documentation AI ($9.99/month), Vision AI ($14.99/month), and Predictive AI ($29.99/month). Subscription fees are billed in advance on a recurring monthly basis and are <strong>non-refundable except as required by law</strong>. You may cancel your subscription at any time, and cancellation will take effect at the end of your current billing period. We reserve the right to change subscription pricing with at least thirty (30) days' advance notice. Failure to pay subscription fees may result in immediate suspension or termination of your account. You are responsible for all applicable taxes.</p>
+
+      <h2>5. AI Accuracy Disclaimer</h2>
+      <div class="legal-warn"><strong>The AI-powered features of the Service — including Documentation AI, Vision AI, and Predictive AI — are decision-support tools only. They are not a substitute for professional judgment, expertise, or regulatory compliance obligations.</strong></div>
+      <p>You acknowledge and agree that:</p>
+      <ul>
+        <li>AI-generated outputs, including but not limited to inspection reports, photo analysis, risk scores, predictions, voice transcriptions, and recommendations, may contain errors, omissions, inaccuracies, false positives, false negatives, or hallucinations.</li>
+        <li>The Service makes <strong>no guarantee</strong> regarding the accuracy, completeness, reliability, fitness for any particular purpose, or regulatory compliance of any AI-generated output.</li>
+        <li>Inspectra AI shall not be liable for any decisions, actions, omissions, or consequences arising from reliance — in whole or in part — on AI-generated outputs by you, your employees, agents, contractors, or any third party.</li>
+        <li>You are solely responsible for independently verifying the accuracy of all AI-generated content before relying on it for any purpose, including but not limited to regulatory submissions, compliance certifications, contractor communications, public reports, or legal proceedings.</li>
+        <li>AI-generated content is not a professional opinion, legal advice, engineering certification, or regulatory determination, and shall not be represented as such.</li>
+      </ul>
+
+      <h2>6. Professional Responsibility</h2>
+      <p>The Service is intended to assist qualified credentialed professionals. It is not a replacement for professional inspection, engineering, or regulatory expertise.</p>
+      <ul>
+        <li>You represent and warrant that you possess all necessary licenses, certifications, and credentials required by your jurisdiction and applicable regulatory bodies (including but not limited to the Alabama Department of Environmental Management (ADEM), the U.S. Environmental Protection Agency (EPA), and equivalent state, federal, and local agencies) to perform the inspection, engineering, or compliance activities for which you use the Service.</li>
+        <li>You retain full and sole professional responsibility and liability for all inspections, reports, certifications, and compliance decisions made using the Service. The Service does not assume any professional liability for your work.</li>
+        <li>You are responsible for ensuring all inspection reports, BMP documentation, and regulatory submissions comply with all applicable federal, state, and local laws and regulations, regardless of any AI-generated content.</li>
+      </ul>
+
+      <h2>7. Acceptable Use</h2>
+      <p>You agree NOT to:</p>
+      <ul>
+        <li>Use the Service for any unlawful purpose or in violation of any local, state, federal, or international law;</li>
+        <li>Attempt to gain unauthorized access to the Service, other users' accounts, or our systems;</li>
+        <li>Interfere with, disrupt, overload, or impair the Service or its servers;</li>
+        <li>Reverse engineer, decompile, disassemble, or attempt to derive the source code of the Service;</li>
+        <li>Resell, sublicense, rent, lease, or redistribute the Service without our express written permission;</li>
+        <li>Upload content that is false, misleading, defamatory, infringing, or violates the rights of any third party;</li>
+        <li>Use the Service to fraudulently misrepresent inspection findings, falsify compliance records, or evade regulatory obligations;</li>
+        <li>Use automated means (bots, scrapers) to access the Service without our prior written consent.</li>
+      </ul>
+
+      <h2>8. Intellectual Property</h2>
+      <p>The Service, including all software, content, graphics, logos, trademarks, AI models, and underlying technology (excluding User Content), is the property of Inspectra AI and is protected by copyright, trademark, and other intellectual property laws. You are granted a limited, non-exclusive, non-transferable, revocable license to use the Service solely in accordance with these Terms.</p>
+      <p>User Content (including site data, photos, voice notes, inspection reports, and other content you upload or generate) remains your property. By using the Service, you grant Inspectra AI a non-exclusive, worldwide, royalty-free license to host, store, process, transmit, and display your User Content solely for the purpose of providing and improving the Service. You represent and warrant that you have all necessary rights to the User Content you upload.</p>
+
+      <h2>9. Disclaimer of Warranties</h2>
+      <p><strong>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE.</strong> Inspectra AI expressly disclaims all warranties, including but not limited to implied warranties of merchantability, fitness for a particular purpose, non-infringement, and any warranties arising from course of dealing or trade usage.</p>
+      <p>We do not warrant that (a) the Service will meet your requirements, (b) the Service will be uninterrupted, timely, secure, or error-free, (c) results obtained from use of the Service will be accurate, reliable, or complete, or (d) any errors in the Service will be corrected. You assume full responsibility and risk for your use of the Service.</p>
+
+      <h2>10. Limitation of Liability</h2>
+      <div class="legal-warn"><strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL INSPECTRA AI, ITS OWNERS, EMPLOYEES, AGENTS, AFFILIATES, OR LICENSORS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, PUNITIVE, OR EXEMPLARY DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, REVENUE, DATA, USE, GOODWILL, REGULATORY FINES, OR OTHER INTANGIBLE LOSSES, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF OR INABILITY TO USE THE SERVICE, EVEN IF WE HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</strong></div>
+      <p><strong>OUR TOTAL CUMULATIVE LIABILITY TO YOU FOR ANY AND ALL CLAIMS ARISING OUT OF OR RELATED TO THE SERVICE — WHETHER IN CONTRACT, TORT, NEGLIGENCE, STRICT LIABILITY, OR ANY OTHER LEGAL THEORY — SHALL NOT EXCEED THE GREATER OF:</strong></p>
+      <ul>
+        <li><strong>(a) The total amount you actually paid to Inspectra AI in subscription fees during the twelve (12) months immediately preceding the event giving rise to the claim, or</strong></li>
+        <li><strong>(b) One Hundred U.S. Dollars ($100.00).</strong></li>
+      </ul>
+      <p>This limitation applies regardless of the legal theory advanced, even if a limited remedy fails of its essential purpose, and survives termination of these Terms. Some jurisdictions do not allow the exclusion or limitation of certain damages; in such jurisdictions, our liability shall be limited to the maximum extent permitted by law.</p>
+
+      <h2>11. Indemnification</h2>
+      <p>You agree to defend, indemnify, and hold harmless Inspectra AI, its owners, employees, agents, and affiliates from and against any and all claims, damages, obligations, losses, liabilities, regulatory fines, penalties, costs, and expenses (including reasonable attorneys' fees) arising from:</p>
+      <ul>
+        <li>Your use of and access to the Service;</li>
+        <li>Your violation of any provision of these Terms;</li>
+        <li>Your violation of any third-party right, including intellectual property, property, or privacy rights;</li>
+        <li>Any User Content you upload or generate;</li>
+        <li>Any regulatory violation, fine, penalty, or enforcement action arising from inspections, reports, certifications, or decisions made using the Service;</li>
+        <li>Any professional liability claim against you, your firm, or your client arising from work performed using the Service.</li>
+      </ul>
+
+      <h2>12. Termination</h2>
+      <p>We may terminate or suspend your account and access to the Service immediately, without prior notice or liability, for any reason, including a breach of these Terms. Upon termination, your right to use the Service will immediately cease. Provisions of these Terms that by their nature should survive termination shall survive — including ownership provisions, warranty disclaimers, indemnification, limitations of liability, and dispute resolution.</p>
+      <p>You may terminate your account at any time through the My Account page. Upon your termination, your User Content will remain accessible to you for download for a period of thirty (30) days, after which it may be permanently deleted.</p>
+
+      <h2>13. Modifications to Service and Terms</h2>
+      <p>We reserve the right to modify, suspend, or discontinue the Service (or any part thereof), temporarily or permanently, at any time and without notice. We may revise these Terms at any time by updating this page. Continued use of the Service after such changes constitutes your acceptance of the revised Terms. We will make reasonable efforts to notify users of material changes via email or in-app notice.</p>
+
+      <h2>14. Governing Law and Dispute Resolution</h2>
+      <p>These Terms shall be governed by and construed in accordance with the laws of the State of Alabama, without regard to its conflict of law provisions. Any dispute arising out of or related to these Terms or the Service shall be resolved exclusively through <strong>binding arbitration</strong> conducted in Birmingham, Alabama, in accordance with the rules of the American Arbitration Association. <strong>You waive any right to participate in a class action lawsuit or class-wide arbitration.</strong> The prevailing party shall be entitled to recover reasonable attorneys' fees and costs.</p>
+
+      <h2>15. Severability and Entire Agreement</h2>
+      <p>If any provision of these Terms is held to be invalid or unenforceable, the remaining provisions shall remain in full force and effect. These Terms, together with the Privacy Policy, constitute the entire agreement between you and Inspectra AI regarding the Service and supersede all prior agreements and understandings.</p>
+
+      <h2>16. Contact</h2>
+      <p>For questions about these Terms, contact us at: <strong>inspectraai.1@gmail.com</strong></p>
+    `
+  },
+
+  privacy: {
+    title: "Privacy Policy",
+    html: `
+      <div class="legal-meta">Effective &amp; Last Updated: ${new Date().toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'})}</div>
+
+      <h2>1. Introduction</h2>
+      <p>Inspectra AI ("we," "us," or "our") respects your privacy and is committed to protecting your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use the Inspectra AI platform (the "Service"). By using the Service, you consent to the practices described in this Privacy Policy.</p>
+
+      <h2>2. Information We Collect</h2>
+      <p><em>Account Information.</em> When you create an account, we collect your full name, email address, and password (stored in hashed/encrypted form in production environments).</p>
+      <p><em>Subscription and Payment Information.</em> When you subscribe to a paid tier, our payment processor collects billing information including credit card details. We do not store full card numbers on our servers — only the last four digits and card brand for receipt purposes.</p>
+      <p><em>User Content.</em> Information you upload or create within the Service, including construction site details, GPS coordinates, addresses, permit numbers, photos, voice notes, transcribed audio, inspection reports, BMP entries, issue logs, and compliance records.</p>
+      <p><em>Usage Data.</em> Information about how you interact with the Service, including pages visited, features used, timestamps, browser type, device type, IP address, and crash reports.</p>
+      <p><em>Cookies and Local Storage.</em> We use browser local storage to maintain your session, store account preferences, and persist data between visits. We do not use third-party advertising cookies or tracking pixels.</p>
+
+      <h2>3. How We Use Your Information</h2>
+      <ul>
+        <li>To provide, operate, and maintain the Service;</li>
+        <li>To process subscription payments and manage billing;</li>
+        <li>To generate inspection reports, perform AI analysis, and deliver requested features;</li>
+        <li>To send service announcements, security alerts, and important account notifications;</li>
+        <li>To send marketing communications (only with your consent; you may unsubscribe at any time);</li>
+        <li>To detect, prevent, and address fraud, abuse, or technical issues;</li>
+        <li>To comply with legal obligations and enforce our Terms of Service;</li>
+        <li>To improve the Service through aggregated and anonymized analytics.</li>
+      </ul>
+
+      <h2>4. Sharing Your Information</h2>
+      <p><strong>We do not sell your personal information.</strong> We share information only in the following limited circumstances:</p>
+      <ul>
+        <li><em>Service Providers.</em> With trusted third-party vendors who assist in operating the Service (hosting providers, payment processors, geocoding services, weather data providers). These providers are contractually obligated to protect your information.</li>
+        <li><em>Legal Compliance.</em> When required by law, subpoena, court order, or governmental request, or to protect our rights, property, or safety, or that of our users or the public.</li>
+        <li><em>Business Transfers.</em> In connection with a merger, acquisition, or sale of assets, your information may be transferred as part of that transaction. We will provide notice before your information is transferred and becomes subject to a different privacy policy.</li>
+        <li><em>With Your Consent.</em> When you explicitly authorize us to share specific information.</li>
+      </ul>
+
+      <h2>5. Data Storage and Security</h2>
+      <p>We implement reasonable technical and organizational measures designed to protect your information from unauthorized access, disclosure, alteration, or destruction. These measures include encryption in transit, access controls, and secure data handling practices. However, no method of transmission over the Internet or electronic storage is 100% secure, and we cannot guarantee absolute security.</p>
+      <p>By default, certain account data may be stored locally in your browser using local storage. This data is not transmitted to our servers unless you opt into cloud sync features.</p>
+
+      <h2>6. Data Retention</h2>
+      <p>We retain your account information and User Content for as long as your account is active. If you cancel your subscription, your account remains accessible at no charge but with limited features. If you delete your account, we will permanently delete your account information and User Content within thirty (30) days, except where retention is required by law (such as billing records for tax purposes).</p>
+
+      <h2>7. Your Rights</h2>
+      <p>Depending on your jurisdiction, you may have the following rights regarding your personal information:</p>
+      <ul>
+        <li><em>Access.</em> Request a copy of the personal information we hold about you.</li>
+        <li><em>Correction.</em> Request correction of inaccurate or incomplete information.</li>
+        <li><em>Deletion.</em> Request deletion of your personal information ("right to be forgotten").</li>
+        <li><em>Portability.</em> Receive a copy of your data in a machine-readable format. We provide a "Download My Data" feature in the My Account page for this purpose.</li>
+        <li><em>Opt-Out.</em> Opt out of certain processing activities, including marketing communications.</li>
+        <li><em>Withdrawal of Consent.</em> Withdraw any consent you have previously given.</li>
+      </ul>
+      <p>To exercise these rights, contact us at inspectraai.1@gmail.com. We will respond within thirty (30) days.</p>
+      <p><em>California Residents (CCPA/CPRA).</em> California residents have additional rights including the right to know what personal information is collected and the right to opt out of any sale of personal information. We do not sell personal information.</p>
+      <p><em>EU/UK Residents (GDPR).</em> EU and UK residents have rights under the General Data Protection Regulation. The legal basis for processing your information is your consent and our legitimate interests in operating the Service.</p>
+
+      <h2>8. Children's Privacy</h2>
+      <p>The Service is not intended for and may not be used by individuals under the age of 18. We do not knowingly collect personal information from children. If we learn that we have collected information from a child under 18, we will delete it promptly.</p>
+
+      <h2>9. Third-Party Services</h2>
+      <p>The Service integrates with third-party services such as map providers (OpenStreetMap), geocoding services (Nominatim), and payment processors. These third-party services have their own privacy policies, and we encourage you to review them. We are not responsible for the privacy practices of third parties.</p>
+
+      <h2>10. International Users</h2>
+      <p>The Service is operated from the United States. If you access the Service from outside the United States, your information may be transferred to, stored, and processed in the United States, where data protection laws may differ from those in your jurisdiction.</p>
+
+      <h2>11. Changes to This Privacy Policy</h2>
+      <p>We may update this Privacy Policy from time to time. The updated version will be posted on this page with a revised "Last Updated" date. For material changes, we will provide additional notice via email or in-app notification. Your continued use of the Service after changes constitutes acceptance of the revised Privacy Policy.</p>
+
+      <h2>12. Contact</h2>
+      <p>For questions, concerns, or requests regarding this Privacy Policy, contact us at: <strong>inspectraai.1@gmail.com</strong></p>
+    `
+  },
+
+  disclaimer: {
+    title: "AI Accuracy Disclaimer",
+    html: `
+      <div class="legal-meta">Effective &amp; Last Updated: ${new Date().toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'})}</div>
+
+      <div class="legal-warn"><strong>Important.</strong> Inspectra AI's artificial intelligence features are decision-support tools only. They are not a substitute for professional inspection, engineering judgment, or regulatory compliance expertise.</div>
+
+      <h2>What the AI Does</h2>
+      <p>Inspectra AI offers three optional AI-powered subscription tiers:</p>
+      <ul>
+        <li><em>Documentation AI</em> auto-generates inspection reports, transcribes voice notes into SWPPP-formatted language, and organizes photos.</li>
+        <li><em>Vision AI</em> analyzes uploaded photos to detect potential issues such as broken silt fences, sediment runoff, erosion rills, and clogged inlets.</li>
+        <li><em>Predictive AI</em> combines weather data, terrain, and inspection history to estimate the likelihood that a site will fail an inspection.</li>
+      </ul>
+
+      <h2>What the AI Does Not Do</h2>
+      <ul>
+        <li>It does <strong>not</strong> replace the professional judgment of a qualified credentialed inspector, professional engineer, or regulatory officer.</li>
+        <li>It does <strong>not</strong> certify regulatory compliance. Only a licensed professional and the appropriate regulatory body can do that.</li>
+        <li>It does <strong>not</strong> guarantee accurate, complete, or correct outputs. AI models can produce errors, omissions, false positives, false negatives, and hallucinations.</li>
+        <li>It does <strong>not</strong> assume professional liability for the work product of any inspector, engineer, developer, or firm using the Service.</li>
+      </ul>
+
+      <h2>Your Responsibility</h2>
+      <p>You acknowledge that you are solely responsible for:</p>
+      <ul>
+        <li>Independently verifying every AI-generated output before relying on it for regulatory submissions, contractor communications, or compliance certifications;</li>
+        <li>Ensuring you possess the appropriate credentials, licenses, and qualifications for the inspection or engineering work being performed;</li>
+        <li>Complying with all applicable laws and regulations, including ADEM, EPA, NPDES, and state and local equivalents;</li>
+        <li>The accuracy and completeness of all User Content uploaded into the Service;</li>
+        <li>Any consequences — including regulatory action, fines, or third-party claims — arising from reliance on AI-generated content.</li>
+      </ul>
+
+      <h2>No Warranty</h2>
+      <p>The AI features are provided "as is" with no warranty of any kind. Inspectra AI disclaims all warranties, express or implied, regarding the accuracy, reliability, completeness, or fitness for any particular purpose of any AI-generated output.</p>
+
+      <h2>Limitation of Liability</h2>
+      <p>Inspectra AI's total liability to any user, for any claim arising out of or related to AI-generated outputs, is limited as set forth in Section 10 of the Terms of Service.</p>
+
+      <h2>Contact</h2>
+      <p>Questions or concerns about AI accuracy: <strong>inspectraai.1@gmail.com</strong></p>
+    `
+  }
+};
+
+function openLegal(type){
+  const doc = LEGAL_DOCS[type];
+  if (!doc) return;
+  document.getElementById("legalTitle").textContent = doc.title;
+  document.getElementById("legalContent").innerHTML = doc.html;
+  document.getElementById("legalContent").scrollTop = 0;
+  document.getElementById("legalMask").classList.add("show");
+}
+function closeLegal(){
+  document.getElementById("legalMask").classList.remove("show");
 }
 
 function importAccount(e){
